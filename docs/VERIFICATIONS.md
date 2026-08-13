@@ -1,3 +1,16 @@
+## Phase 4 — Integrity Path
+
+- Signals S1–S8 implemented with per-signal evidence
+- Verdict composition: weighted average, thresholds TRUST≤0.4, QUARANTINE≥0.7
+- BeliefPoller polling fallback implemented (not log-driven CDC — see README gap)
+- Idempotency: (belief_id, screener_version) key prevents duplicate verdicts
+- Fail-closed: pending beliefs invisible to role_consumer (enforced by v_trusted_current view)
+- Unit tests: test_signals.py, test_gate.py — all pass
+- Integration tests: test_integrity_path.py — all pass
+- Screening lag: not measured (no worker running; polling interval configurable, default 5s)
+
+---
+
 ## P3 — Phase 3 Write Path
 
 **Completed:** 2026-08-13
