@@ -9,14 +9,12 @@ import json
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
-from unittest.mock import MagicMock, call, patch
+from unittest.mock import MagicMock
 from uuid import UUID, uuid4
-
-import pytest
 
 from pqbs.contracts import QuarantineRecord, AuditEventType
 from pqbs.contracts.enums import Disposition, ReasonCode
-from pqbs.agents.integrity.a6_cascade import CascadeAgent, CascadeResult
+from pqbs.agents.integrity.a6_cascade import CascadeAgent
 from pqbs.agents.integrity.audit_sink import AuditSink
 
 _NOW = datetime(2026, 8, 13, 12, 0, 0, tzinfo=timezone.utc)
@@ -65,7 +63,7 @@ def _make_sink(tmp_path: Path) -> AuditSink:
 
 
 def _make_conn_for_tree(
-    root_id: UUID,
+    _root_id: UUID,
     child_map: dict[UUID, list[UUID]],
     belief_rows: dict[UUID, dict[str, Any]],
 ) -> MagicMock:
@@ -83,7 +81,7 @@ def _make_conn_for_tree(
         if "derived_from @>" in sql_stripped:
             # BFS children query — params[1] is the JSON array like '["uuid"]'
             if params is not None:
-                tenant_id_param, json_param = params[0], params[1]
+                _, json_param = params[0], params[1]
                 parent_id_str = json.loads(json_param)[0]
                 parent_id = UUID(parent_id_str)
                 children = child_map.get(parent_id, [])

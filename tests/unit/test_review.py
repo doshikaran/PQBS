@@ -5,11 +5,10 @@ No live DB or AWS credentials required.
 """
 from __future__ import annotations
 
-import json
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
-from unittest.mock import MagicMock, call
+from unittest.mock import MagicMock
 from uuid import UUID, uuid4
 
 import pytest
