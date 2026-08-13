@@ -1,21 +1,22 @@
 # Skill: Temporal Reconstruction
 
-Use this skill when implementing bitemporal queries, MVCC as-of queries, or explaining the difference between the two mechanisms to a human or in the README.
+Use this skill when implementing bitemporal queries, MVCC as-of queries, backup-anchored reconstruction, or explaining the difference between the three mechanisms to a human or in the README.
 
 ---
 
-## Two Mechanisms — Two Questions
+## Three Mechanisms — Three Questions
 
 These mechanisms answer different questions and must not be conflated. A knowledgeable reviewer will notice if the README conflates them.
 
-| | Mechanism 1 (Bitemporal) | Mechanism 2 (MVCC) |
-|---|---|---|
-| **Question** | "What did we *believe* at time T?" | "What *state* did the DB have at instant T?" |
-| **Bound** | Unbounded — works arbitrarily far back | Bounded — limited by GC retention window |
-| **Data source** | `tx_from` / `tx_to` columns (ordinary data) | MVCC snapshot (database-internal) |
-| **What it includes** | Beliefs we currently acknowledge were held at T | Exact committed rows including since-revised |
-| **Production use** | **Yes — the durable mechanism** | Short-horizon forensics only |
-| **README claim** | Safe to claim arbitrary historical replay | Must state the measured bound |
+| | Mechanism 1 (Bitemporal) | Mechanism 2 (MVCC) | Mechanism 3 (Backup-Anchored) |
+|---|---|---|---|
+| **Question** | "What did we *believe* at time T?" | "What *state* did the DB have at instant T?" | "What was the DB state at T, beyond the MVCC window, from backup?" |
+| **Bound** | Unbounded — works arbitrarily far back | Bounded — limited by GC retention window | Bounded by backup coverage (gaps reported explicitly) |
+| **Data source** | `tx_from` / `tx_to` columns (ordinary data) | MVCC snapshot (database-internal) | Nearest backup snapshot (via A19 ccloud CLI backup catalog) |
+| **What it includes** | Beliefs we currently acknowledge were held at T | Exact committed rows including since-revised | Snapshot at backup time; point-in-time granularity depends on backup frequency |
+| **Production use** | **Yes — the durable mechanism** | Short-horizon forensics only | Beyond MVCC window when bitemporal isn't sufficient (e.g., exact row state needed) |
+| **README claim** | Safe to claim arbitrary historical replay | Must state the measured bound | Must state backup frequency and coverage gaps |
+| **Owner** | E4 (A10) | E4 (A10) | E3 (A19) — A10 proxies to A19 |
 
 ---
 
@@ -69,6 +70,33 @@ Reconstructs the exact committed state at a past instant, including rows since r
 ```
 ERROR: AS OF SYSTEM TIME: timestamp ... is below the earliest available timestamp
 ```
+
+---
+
+## Mechanism 3 — Backup-Anchored Reconstruction (A19)
+
+When a temporal query arrives with `mechanism='backup_anchored'`, A10 delegates to A19. A19 uses the ccloud CLI to:
+
+1. Query the backup catalog: `ccloud cluster backups list pqbs-dev --output json`
+2. Identify the backup nearest to (and before) the requested `as_of` timestamp.
+3. Extract the relevant rows from that backup snapshot.
+4. Return results to A10, which surfaces them to the caller.
+
+**Gap handling:** if no backup covers the requested timestamp, A19 must report the gap explicitly:
+```python
+# A19 gap response (not silence)
+{
+    "error": "backup_coverage_gap",
+    "requested_timestamp": "...",
+    "nearest_backup_before": "...",   # or None if no earlier backup
+    "nearest_backup_after": "...",    # or None if no later backup
+    "suggestion": "Use bitemporal query (Mechanism 1) if the gap predates your bitemporal data"
+}
+```
+
+**Precision note:** backup-anchored reconstruction has point-in-time granularity equal to the backup frequency (e.g., hourly). MVCC is exact; backup is nearest-backup. Disclose this in the README.
+
+**Mechanism 3 is Mechanism 2's fallback** when the MVCC window has been exceeded AND the bitemporal data is insufficient (e.g., the question requires the exact committed row state, not just the system's acknowledged beliefs).
 
 ---
 
@@ -183,6 +211,10 @@ In the README, state explicitly:
 
 2. **Mechanism 2 (MVCC)** reconstructs the exact committed state at T, including rows since revised. It is bounded by the garbage-collection retention window (measured at [date] as [N minutes/hours]). Beyond that window, it fails with an explicit error.
 
-3. **Any claim of arbitrary historical replay must be attributed to Mechanism 1.** MVCC cannot support this claim, and a knowledgeable reviewer will know it.
+3. **Mechanism 3 (backup-anchored)** answers "what was the exact DB state at T" for timestamps beyond the MVCC window, using the backup catalog maintained by A19 via the ccloud CLI. Precision is bounded by backup frequency. Coverage gaps are reported explicitly rather than returning silence.
 
-4. **The measured MVCC window is [N].** (Fill in from V3 spike.)
+4. **Any claim of arbitrary historical replay must be attributed to Mechanism 1.** MVCC cannot support this claim, and a knowledgeable reviewer will know it.
+
+5. **The measured MVCC window is [N].** (Fill in from V3 spike.)
+
+6. **Mechanism 3 backup frequency is [N].** (Fill in from A19's backup catalog findings.)

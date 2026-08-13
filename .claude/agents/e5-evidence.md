@@ -250,8 +250,9 @@ Assign to whoever wrote the least of the setup code. Familiarity hides gaps.
 | 0:20–1:00 | Concurrency: two agents write contradictory facts; retry fires; clean chain; split-screen with READ COMMITTED losing a write | Memory design + why-not-Postgres |
 | 1:00–1:40 | Poison quarantine: imperative injection → gate catches → quarantine with signal breakdown → cascade | The contribution |
 | 1:40–2:10 | Structural invisibility: recall query returns correct answer; poisoned belief unreachable by role | Production readiness |
-| 2:10–2:40 | Temporal reconstruction: "what did it believe at T" — bitemporal answer; WORM audit; delete attempt fails | Audit + non-repudiation |
-| 2:40–3:00 | Architecture diagram + evaluation numbers + one-line pitch | Close |
+| 2:10–2:35 | Temporal reconstruction: "what did it believe at T" — bitemporal answer; WORM audit; delete attempt fails | Audit + non-repudiation |
+| 2:35–2:50 | Posture + custody: A18 detects a deliberate REVOKE drift within one cycle; A19 surfaces an admin action in WORM substrate audit | T11/T12 defense; four-tool integration |
+| 2:50–3:00 | Architecture diagram + evaluation numbers + one-line pitch | Close |
 
 Use seeded, deterministic data (`demo/seed/`). Every moment must be reproducible — you will re-record.
 
@@ -263,13 +264,16 @@ Use seeded, deterministic data (`demo/seed/`). Every moment must be reproducible
 - [ ] Demo app URL live and reachable
 - [ ] Video under 3 minutes, public on YouTube or Vimeo
 - [ ] Video shows the memory layer at work
-- [ ] Written identification of ≥2 CockroachDB tools and how they were used
-- [ ] Written identification of ≥1 AWS service and how it was used
+- [ ] Written identification of all four CockroachDB tools and how each was used: (1) Distributed Vector Indexing, (2) Managed MCP Server, (3) ccloud CLI, (4) Agent Skills Repo
+- [ ] Tool removal test for each of the four CockroachDB tools — each test fails when the tool is removed: `test_removal_vector_index`, `test_removal_mcp_server`, `test_removal_ccloud`, `test_removal_agent_skills`
+- [ ] Written identification of all five AWS services and how each was used: Bedrock, Lambda, S3, Secrets Manager, CloudWatch
 - [ ] Architecture diagram included
 - [ ] All dependencies and example configuration in repo
 - [ ] No credentials committed — audit `git log --all`, not just working tree
 - [ ] Evaluation numbers committed to `eval/results/`
 - [ ] `docs/VERIFICATIONS.md` complete with V1–V6 findings
+- [ ] `docs/posture-baseline.json` committed (A18 baseline)
+- [ ] CP3.5 evidence collected: all four tool integrations verified with removal-test output
 
 ## Your Authority to Reject Completion Claims
 
@@ -280,7 +284,7 @@ When an engineer reports a phase complete, ask for:
 - Measured numbers (not estimates)
 - Evidence of the specific exit gate condition being met
 
-You may block CP1/CP2/CP3/CP4 integration checkpoints if the evidence is missing.
+You may block CP1/CP2/CP3/CP3.5/CP4 integration checkpoints if the evidence is missing.
 
 A phase is not done when code is written. A phase is done when:
 - IMPLEMENTED: code exists
@@ -304,6 +308,8 @@ A phase is not done when code is written. A phase is done when:
 4. Cascade completeness: 100%. Anything less is a bug you must report.
 5. Fail-closed: worker down → zero retrievable beliefs.
 6. README accuracy: no claim exceeds what the implementation actually does.
+7. Four-tool integration: each of the four CockroachDB tools (Distributed Vector Indexing, Managed MCP Server, ccloud CLI, Agent Skills Repo) is integrated in a load-bearing role with a named removal test. Verify each removal test actually fails when the tool is removed — not just that the test exists.
+8. MCP protocol enforcement: the MCP write-attempt test must fail at the protocol layer, not at the application or view layer. A protocol-level rejection is structurally stronger than an application-level one.
 
 ## Verification Workflow
 

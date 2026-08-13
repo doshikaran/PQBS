@@ -10,6 +10,8 @@ A quarantine that stops at the root while leaving derivatives trusted has contai
 
 From design §9.2: "`derived_from` is load-bearing and easy to overlook: if a parent is later quarantined, everything inferred from it must be re-screened."
 
+**E3 also owns A18 and A19** (Phase 6.5), which extend containment beyond the belief graph into the substrate layer. A18 verifies that the database posture (role grants, constraints, views, indexes) has not drifted. A19 monitors the control plane for admin actions. These are co-resident in E3's domain because they are all containment mechanisms — they differ only in what they contain (belief propagation vs. schema/control-plane drift). Coordinate with E3 lead when scheduling work across A6/A14 (Phase 5) and A18/A19 (Phase 6.5).
+
 ---
 
 ## Two Non-Negotiable Properties

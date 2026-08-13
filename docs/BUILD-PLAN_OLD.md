@@ -34,9 +34,8 @@ Five engineers. Assignments are by *vertical slice with a clear interface*, not 
 | **E1 — Substrate** | Schema, migrations, transactions, resolution logic, retry semantics | §9, §13, §19 | A7, A11 |
 | **E2 — Integrity** | CDC wiring, screening gate, signals, verdict logic | §14, §23 | A4, A12 |
 | **E3 — Containment** | Cascade, quarantine lifecycle, review disposition, audit sink | §14.4, §17 | A6, A14, A5 |
-| **E4 — Surface** | Recall path, audit agent, temporal reconstruction, MCP integration, demo UI | §15, §16, §19.0, §22 | A9, A10 |
+| **E4 — Surface** | Recall path, audit agent, temporal reconstruction, demo UI | §15, §16, §22 | A9, A10 |
 | **E5 — Evidence** | Evaluation harness, red-team corpus, contention harness, observability, README/video | §25, §23, §30 | A15, A17, A13 |
-| **E3 — Containment (extended)** | Also owns posture verification and substrate custody | §10 A18/A19, §17, §19.0 | A18, A19 |
 
 **E5 is the most important role and the one most likely to be under-resourced.** E5 owns the contention harness (Phase 0's exit gate), the evaluation numbers (the project's evidence), and the video (what judges actually grade). Assign your strongest generalist.
 
@@ -101,14 +100,7 @@ Every design-doc section mapped to its implementing phase. **This is the anti-di
 | §10 A9 | Recall | P6 | E4 | **Spine** |
 | §10 A10 | Audit | P6 | E4 | **Spine** |
 | §10 A17 | Telemetry | P7 | E5 | |
-| §10 A18 | Posture verification | P6.5 | E3 | **Agent Skills tool integration** |
-| §10 A19 | Substrate custody | P6.5 | E3 | **ccloud CLI tool integration** |
 | §11 | Authority matrix | P2 | E1 | DB roles + grants |
-| §16 M3 | Backup-anchored reconstruction | P6.5 | E3 | Depends on A19 |
-| §19.0 | CockroachDB tool integration map | P6.5 | E3/E4 | **Submission requirement** |
-| §20.1 | AWS service summary | P10 | E5 | **Submission requirement** |
-| §4.1 T11 | Control drift | P6.5 | E3 | A18 defends |
-| §4.1 T12 | Substrate tampering | P6.5 | E3 | A19 defends |
 | §12 | Collapse plan | P9 | Lead | Decision checkpoint |
 | §13 | Write path | P3 | E1 | |
 | §14 | Integrity path | P4 | E2 | |
@@ -810,13 +802,13 @@ Five steps per design §15. The critical implementation detail:
 
 `retrieval_log` records what was **actually returned**, not what existed. Post-incident analysis needs this; without it, "what was in context when it decided that" is unanswerable even with perfect belief history.
 
-### 8.2 A10 Audit — temporal mechanisms 1 and 2
+### 8.2 A10 Audit — both temporal mechanisms
 
 **Mechanism 1 (bitemporal, unbounded).** Filter on transaction-time columns. Works arbitrarily far back. **This is the product.**
 
 **Mechanism 2 (MVCC as-of-timestamp, bounded).** Reconstructs the exact committed snapshot. Bounded by the retention window measured in V3.
 
-**Both must be implemented here, and the README must distinguish all three.** `[Certain]` MVCC history is compacted after the retention period. Claiming arbitrary historical replay via Mechanism 2 is the single most likely factual error in the submission, and a knowledgeable reviewer will catch it. Design §16 already anticipates this; the implementation and the writeup must match. **Mechanism 3 (backup-anchored, unbounded, exact but coarse-grained) is built in Phase 6.5 with A19** — design the A10 interface now to accommodate a third mechanism rather than retrofitting it.
+**Both must be implemented, and the README must distinguish them.** `[Certain]` MVCC history is compacted after the retention period. Claiming arbitrary historical replay via Mechanism 2 is the single most likely factual error in the submission, and a knowledgeable reviewer will catch it. Design §16 already anticipates this; the implementation and the writeup must match.
 
 A10 also answers attribution queries: who wrote this, why was it quarantined, what changed between T1 and T2, what did this belief influence (join `retrieval_log`).
 
@@ -840,119 +832,9 @@ Resist building more. The video is the deliverable, not the UI.
 - [ ] Attribution queries return agent identity and provenance chain
 - [ ] Recall latency p50 < 600 ms
 
-### 8.5 MCP Server as the read transport *(new in v3.0)*
-
-Per design §19.0, A9 and A10 access beliefs through the **CockroachDB Cloud Managed MCP Server** rather than a direct database connection. This is the second independent enforcement layer on trust boundary TB4.
-
-**Setup:** Obtain the config snippet from the CockroachDB Cloud Console (endpoint `https://cockroachlabs.cloud/mcp`) and configure the consumer-tier client against it. `[VERIFY]` — confirm the exact snippet format and auth model against the Console; this is Phase 0 spike V4's output.
-
-**Why this is not redundant with role-scoped views.** The two controls fail independently:
-
-| Failure | View layer | MCP layer | Outcome |
-|---|---|---|---|
-| Bad `GRANT` widens `role_consumer` | ❌ compromised | ✅ no write verb exposed | Contained |
-| MCP misconfigured to allow writes | ✅ view still filters | ❌ compromised | Contained |
-| Both misconfigured | ❌ | ❌ | Compromised — this is why A18 exists |
-
-**Verification test:** connect as the consumer agent through MCP and attempt a write. **It must fail at the protocol layer**, before the database is consulted. Capture this in the MCP audit log and show it in the video — it is a four-second shot that proves defense in depth.
-
-**Fallback:** if V4 findings make MCP unusable for the read path, fall back to direct connection with role enforcement. The project drops to a single enforcement layer on TB4 and — importantly — **loses one of its two required CockroachDB tools**, making Phase 6.5's ccloud and Skills integrations mandatory rather than additive.
-
-### 8.6 Phase 6 Definition of Done — addendum
-
-- [ ] A9 and A10 read through the Managed MCP Server
-- [ ] MCP write attempt fails at protocol layer; failure captured in MCP audit log
-- [ ] MCP audit log retrievable and shows agent attribution
-
-### 8.7 Phase 6 Exit Gate
+### 8.5 Phase 6 Exit Gate
 
 > **Design §26.9 reproduces: a bitemporal query answers "what did it believe on day 5" *after* the MVCC window has aged out, and the failure of Mechanism 2 at that range is visible and explained rather than hidden.**
-
----
-
-## 8B. Phase 6.5 — Self-Verification: Posture and Custody
-
-**Owner:** E3
-**Implements:** design §10 A18/A19, §16 Mechanism 3, §17 two-layer audit, §19.0, threats T11/T12
-
-**Why this phase exists.** v2.0 asserted that the database enforces the authority matrix (P6) and that the audit provides non-repudiation (§17) — but nothing verified either claim continuously. This phase closes both gaps, and does so using the two remaining CockroachDB tools in load-bearing roles.
-
-### 8B.1 A18 — Posture Verification Agent (Agent Skills Repo)
-
-**Install the skills:**
-```bash
-# [VERIFY] confirm current install method against the repo README
-npx skills add cockroachlabs/cockroachdb-skills
-```
-`[Likely]` The repo is Apache-2.0 and advertises portability across Claude, Cursor, LangChain, and MCP-compatible clients. Confirm which skill families are present — the security, schema-design, and observability families are the ones this agent needs.
-
-**Capture the posture baseline.** At deployment, snapshot the expected state of every enforcing control:
-
-| Control class | What is captured | Source of truth |
-|---|---|---|
-| Role grants | Exact grant set per role | Migration `0011_roles` |
-| Check constraints | All constraints on `belief` | Migration `0005`, `0002` |
-| Role-scoped views | View definitions and `WITH CHECK OPTION` | Migration `0012_views` |
-| Vector index | Index exists, is prefixed, is planner-selected | Migration `0006` |
-| TTL policy | TTL active on `working_memory` | Migration `0010` |
-
-Store the baseline as a committed artifact (`docs/posture-baseline.json`), not as a database row — a baseline living inside the system it verifies can be altered by whoever altered the system.
-
-**Run and compare.** Scheduled Lambda invocation runs the skills-driven introspection, diffs against baseline, and:
-- On match → writes a posture attestation to the WORM audit sink
-- On drift → raises a critical alert **and** writes the drift detail to the audit sink
-
-**Critical design point:** A18 **cannot remediate.** It reports; a human acts. An agent that can both detect and silently fix control drift can also silently cause it.
-
-**Verification test (and a strong demo moment):** deliberately `REVOKE` a grant that the authority matrix depends on, run A18, confirm the drift is detected and alerted within one cycle. Restore. This proves the control-verification claim empirically rather than asserting it.
-
-### 8B.2 A19 — Substrate Custody Agent (ccloud CLI)
-
-**Create a scoped service account.** `[VERIFY]` — ccloud supports service-account-based RBAC; scope this account to control-plane *read* plus backup *create*, with no restore authority and no SQL-layer access.
-
-```bash
-# [VERIFY] exact syntax — check ccloud docs
-ccloud service-account create pqbs-custody --description "A19 substrate custody, read+backup only"
-ccloud service-account-key create <SERVICE_ACCOUNT_ID>
-```
-
-**Two functions:**
-
-**(a) Control-plane audit ingestion.** Poll the cluster's audit log via ccloud (JSON output on every command makes this directly parseable), forward entries to the same WORM sink used by belief-layer audit. This is design §17's second audit layer.
-
-```bash
-# [VERIFY] confirm the audit-log command surface
-ccloud cluster audit-log list --cluster pqbs-dev --output json
-```
-
-**(b) Backup catalog and Mechanism 3.** Track backup coverage; expose reconstruction beyond the GC horizon. A19 reports coverage gaps explicitly rather than letting them surface during an investigation.
-
-```bash
-# [VERIFY]
-ccloud cluster backup list --cluster pqbs-dev --output json
-```
-
-**Authority boundary:** A19 may *trigger* backups but **may not restore.** Restoration is human-authorized. An agent that can restore can also roll back an inconvenient audit trail.
-
-**Verification test:** perform an administrative action against the cluster (create a SQL user), confirm A19 surfaces it in the WORM audit sink within one polling cycle. This is design §17's insider-threat claim, demonstrated.
-
-### 8B.3 Phase 6.5 Definition of Done
-
-- [ ] Agent Skills repo installed; relevant skill families identified
-- [ ] Posture baseline captured and committed as `docs/posture-baseline.json`
-- [ ] A18 runs on schedule, writes attestations to WORM sink
-- [ ] **Drift test passes:** deliberate `REVOKE` detected and alerted
-- [ ] A18 confirmed unable to remediate (negative test)
-- [ ] ccloud service account created with scoped RBAC
-- [ ] A19 ingests control-plane audit to WORM sink
-- [ ] **Insider-threat test passes:** administrative action surfaces in audit within one cycle
-- [ ] A19 confirmed unable to restore (negative test)
-- [ ] Mechanism 3 answers a query beyond the GC window
-- [ ] Backup coverage gaps reported explicitly
-
-### 8B.4 Phase 6.5 Exit Gate
-
-> **All four CockroachDB tools are integrated in load-bearing roles, and each has a test that fails if the tool is removed.** That last clause is the real test of "meaningfully integrated, not just initialized" — if the project still works with a tool ripped out, that tool was decoration.
 
 ---
 
@@ -1175,11 +1057,8 @@ Under three minutes. Derived from design §18 sequence diagrams and §26's worke
 | 0:20–1:00 | **Concurrency:** two agents write contradictory facts; retry fires; clean chain; nothing lost. Split-screen with READ COMMITTED losing a write | Memory Design + why-not-Postgres |
 | 1:00–1:40 | **Poison quarantine:** imperative-content injection → gate catches → quarantine with signal breakdown → cascade | The contribution |
 | 1:40–2:10 | **Structural invisibility:** recall query returns correct answer; the poisoned belief is not merely filtered but unreachable by role | Production readiness |
-| 2:10–2:35 | **Temporal reconstruction:** "what did it believe at T" — bitemporal answer; WORM audit record; delete attempt fails | Audit + non-repudiation |
-| 2:35–2:50 | **Self-verification:** deliberate `REVOKE` → A18 detects control drift within one cycle; admin action → A19 surfaces it in WORM audit | Production readiness; the control that verifies the controls |
-| 2:50–3:00 | Architecture diagram + evaluation numbers + one-line pitch | Close |
-
-**If the video runs long, cut in this order:** the A19 admin-action shot (keep A18's drift detection — it is the more surprising of the two), then the WORM delete-attempt shot, then narrow the temporal reconstruction to a single mechanism. **Never cut the concurrency moment or the quarantine moment** — those are the project.
+| 2:10–2:40 | **Temporal reconstruction:** "what did it believe at T" — bitemporal answer; WORM audit record; delete attempt fails | Audit + non-repudiation |
+| 2:40–3:00 | Architecture diagram + evaluation numbers + one-line pitch | Close |
 
 **Record with seeded, deterministic data.** Every moment must be reproducible on demand, because you will re-record.
 
@@ -1191,10 +1070,8 @@ Under three minutes. Derived from design §18 sequence diagrams and §26's worke
 - [ ] Demo app URL live and reachable
 - [ ] Video under 3 minutes, public on YouTube or Vimeo
 - [ ] Video shows the memory layer at work (explicit rule requirement)
-- [ ] Written identification of CockroachDB tools and how they were used — **all four, per design §19.0**
-- [ ] **Removal test documented for each tool:** for each of the four, a named test that fails if the tool is removed. This is the evidence for "meaningfully integrated, not just initialized."
-- [ ] Written identification of AWS services and how they were used — **five, per design §20.1**
-- [ ] Tool integration map (design §19.0 table) reproduced in README
+- [ ] Written identification of ≥2 CockroachDB tools and how they were used
+- [ ] Written identification of ≥1 AWS service and how it was used
 - [ ] Architecture diagram included (optional per rules, but do it)
 - [ ] All dependencies and example configuration in repo
 - [ ] No credentials committed — **audit git history, not just the working tree**
@@ -1217,9 +1094,6 @@ Design doc gap. Track in `docs/BUDGET.md`, updated daily.
 | Model inference (embedding) | Per belief + per query | Cache embeddings by content hash |
 | Model inference (screening S3) | Per screened belief | Lexical prefilter before model call |
 | Object storage (WORM) | Per audit record; retention-locked | **Cannot be deleted** — size the retention window deliberately |
-| A18 posture runs | Per scheduled invocation; schema introspection only | Cheap; run every few minutes safely |
-| A19 control-plane polling | Per scheduled invocation | Cheap; but check whether audit-log API calls are metered |
-| A19 backup triggers | **Per backup; storage accrues** | Highest new cost risk — trigger sparingly, use existing automated backups where possible |
 
 **Two specific traps:**
 1. **A leftover changefeed running overnight** is the most likely way to burn the allowance without noticing. Add a teardown step to every test session.
@@ -1243,8 +1117,6 @@ Parallel work across five owners needs scheduled convergence. Four checkpoints:
 
 **CP3 — after Phase 6.** Full path: write → screen → cascade → recall → audit. First end-to-end demo rehearsal.
 
-**CP3.5 — after Phase 6.5.** All four CockroachDB tools verified integrated. **Run the removal test for each.** This is the checkpoint that de-risks the Stage One pass/fail requirement — do not defer it to submission week.
-
 **CP4 — after Phase 8.** Evaluation numbers reviewed as a group. Decide what goes in the README and how to frame the weak results.
 
 ---
@@ -1266,11 +1138,6 @@ Design §29 covers design risks. These are execution risks.
 | README instructions don't work | Phase 10 | Clean-room test by someone who didn't write them |
 | Video re-record needed late | Phase 10 | Deterministic seed data from Phase 2 makes this cheap |
 | Evaluation shows weak results | Phase 8 | **Report honestly.** Frame as measured limitation of a heuristic gate. |
-| MCP unusable for read path | Phase 0 V4 / Phase 6 | Fall back to direct connection. **Phase 6.5 becomes mandatory** to stay above the two-tool threshold. |
-| Agent Skills repo thin or unmaintained | Phase 6.5 | `[Likely]` low community traction. If skills don't cover the needed introspection, write the checks directly and use skills for onboarding/observability instead — but then say so honestly rather than overclaiming the integration. |
-| ccloud audit-log surface differs from expectation | Phase 6.5 | Verify the command surface early; if audit logs aren't accessible on the free tier, A19 reduces to backup custody only and Mechanism 3 survives. |
-| Tool integrations read as bolt-on | Phase 10 | **The removal test is the answer.** For each tool, name the test that fails without it. If you can't name one, the integration is decoration and should be deepened or dropped. |
-| Scope inflation from four-tool integration | Phase 6.5 | A18/A19 are the last things built before evaluation. If Phase 6.5 threatens Phase 8, reduce their scope per design §12 rather than cutting evaluation. |
 
 ---
 

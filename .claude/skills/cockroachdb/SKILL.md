@@ -1,6 +1,17 @@
 # Skill: CockroachDB
 
-Use this skill when working with CockroachDB features: serializable isolation, MVCC time-travel, CDC/changefeeds, vector indexes, row-level TTL, database roles, and the wire-protocol compatibility with PostgreSQL drivers.
+Use this skill when working with CockroachDB features: serializable isolation, MVCC time-travel, CDC/changefeeds, vector indexes, row-level TTL, database roles, the Managed MCP Server (read transport), the ccloud CLI (control-plane management), the Agent Skills Repo (A18 posture verification), and the wire-protocol compatibility with PostgreSQL drivers.
+
+## Four Required Tools (Submission Requirement)
+
+PQBS must integrate all four CockroachDB tools in load-bearing roles, each with a named removal test:
+
+| Tool | Load-bearing role | Named removal test |
+|---|---|---|
+| **Distributed Vector Indexing** | Nearest-neighbor recall; structural tenant isolation | `test_removal_vector_index` |
+| **Managed MCP Server** | A9/A10 read transport; protocol-layer write enforcement | `test_removal_mcp_server` |
+| **ccloud CLI** | A19 control-plane audit ingestion; backup catalog; Mechanism 3 | `test_removal_ccloud` |
+| **Agent Skills Repo** | A18 posture verification (security, schema-design, observability families) | `test_removal_agent_skills` |
 
 ---
 
@@ -196,6 +207,52 @@ ccloud cluster create serverless pqbs-dev --region <REGION> --plan basic
 ccloud cluster sql pqbs-dev --echo-sql
 ccloud cluster usage pqbs-dev    # check daily consumption
 ```
+
+## Managed MCP Server (Read Transport for A9/A10)
+
+The CockroachDB Cloud Managed MCP Server provides a read-only protocol endpoint for consumer agents:
+
+- **Endpoint:** `cockroachlabs.cloud/mcp`
+- **Protocol guarantee:** no write verb is available at the MCP protocol layer regardless of database role grants. This is the second enforcement layer on TB4 (consumer trust boundary).
+- **Use in PQBS:** A9 (Recall) and A10 (Audit) connect through MCP for all consumer-path reads.
+- **V4 spike:** Phase 0 V4 verifies MCP is usable, documents read/write/audit semantics, and confirms the write-verb absence at the protocol layer.
+
+```python
+# [VERIFY] Exact MCP connection mechanism from V4 spike findings
+# Connect A9/A10 through MCP endpoint (not direct CRDB URL)
+MCP_ENDPOINT = os.environ['COCKROACH_MCP_ENDPOINT']  # cockroachlabs.cloud/mcp
+```
+
+**Fallback:** if V4 found MCP unusable, use direct connection but escalate to the Lead — Phase 6.5 becomes mandatory to compensate for the lost tool count.
+
+## Agent Skills Repo (A18 Posture Verification)
+
+The CockroachDB Agent Skills Repo provides skill families for agents to use CockroachDB capabilities safely:
+
+- **Skill families used by A18:** security, schema-design, observability
+- **Use in PQBS:** A18 uses these skills to query the schema catalog, compare role grants and constraints against `docs/posture-baseline.json`, and emit posture attestations or drift alerts.
+- **Installation:** `[VERIFY] check current Agent Skills Repo installation method`
+
+A18 runs the security skill family to verify role grants, the schema-design family to verify constraints and views, and the observability family to emit structured posture records to the WORM sink.
+
+## ccloud CLI in A19 (Substrate Custody)
+
+A19 uses the ccloud CLI with JSON output for all control-plane interactions:
+
+```bash
+# [VERIFY] Exact ccloud audit-log syntax
+ccloud audit-log list --since <last_poll_ts> --output json
+
+# [VERIFY] Exact backup catalog query syntax
+ccloud cluster backups list pqbs-dev --output json
+```
+
+**Service account RBAC:** A19 runs with a scoped service account that has:
+- Read authority on control-plane audit logs
+- Authority to trigger backups
+- NO restore authority (human-authorized only)
+
+**JSON output discipline:** every ccloud command used by A19 must use `--output json`. Do not parse human-readable ccloud output — it is not stable.
 
 ---
 

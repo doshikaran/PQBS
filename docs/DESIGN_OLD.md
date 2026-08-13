@@ -127,8 +127,6 @@ The critical property is **temporal decoupling**. A prompt injection is bounded 
 | T8 | Derivation propagation | Poison spreads via inference from a corrupted parent. | `derived_from` graph enables cascade re-screening. |
 | T9 | Quarantine laundering | Attacker gets quarantined content merged into a trusted record via consolidation. | Consolidation may never merge across a quarantine boundary. |
 | T10 | Screening starvation | Attacker floods writes with expensive-to-screen content, stalling the gate. | Async gate (write path never blocks); per-agent rate limits; priority queue. |
-| T11 | Control drift | Grants, constraints, or view definitions are altered — deliberately or accidentally — silently disabling the enforcement the security model depends on. | A18 continuous posture verification against a deployment baseline. |
-| T12 | Substrate-layer tampering | An actor with control-plane access alters the cluster beneath the agents, leaving belief-layer audit clean. | A19 control-plane audit ingestion to WORM; A18 independent posture check. |
 
 ### 4.2 Out of scope
 
@@ -757,24 +755,6 @@ Each agent is specified with: role, inputs, outputs, authority, failure behavior
 - **Authority:** Read-only on operational tables; no belief access.
 - **Notes:** Broken out so that observability is a designed subsystem rather than scattered logging. §23 defines what it watches.
 
-#### A18 — Posture Verification Agent *(new in v3.0)*
-- **Role:** Continuously verifies that the database-layer controls this system's security argument depends on have not drifted: role grants intact, check constraints present, role-scoped views unaltered, vector index present and used, TTL policy active.
-- **Inputs:** Live schema introspection; the expected-posture baseline captured at deployment.
-- **Outputs:** Posture drift alerts; a signed posture attestation written to the audit sink on each run.
-- **Authority:** Read-only on catalog and schema metadata. **No belief access of any kind.** Cannot remediate — it reports, a human acts.
-- **Failure behavior:** On detecting drift in any authority-matrix-enforcing control, raises a critical alert. **A drifted grant is treated as a potential compromise, not a configuration error.**
-- **Implementation:** Driven by the CockroachDB **Agent Skills Repo** — the security, schema-design, and observability skill families encode exactly the introspection expertise this agent needs, and they are machine-executable, so the agent runs them rather than reimplementing schema forensics.
-- **Notes:** This agent exists because of a real gap: design principle P6 asserts that every guarantee is enforced by the database rather than application code, and §11's authority matrix is the statement of those guarantees — **but nothing in v2.0 checked that the grants and constraints implementing them were still in place.** A security model that is never re-verified is a security model that decays silently. This is the control that verifies the controls.
-
-#### A19 — Substrate Custody Agent *(new in v3.0)*
-- **Role:** Manages the system's relationship to its own substrate: monitors control-plane audit logs for administrative actions against the cluster, tracks backup state, and extends the temporal reconstruction horizon beyond the MVCC garbage-collection window.
-- **Inputs:** Control-plane audit logs; backup catalog; the current GC retention window.
-- **Outputs:** Administrative-action alerts; backup coverage reports; **Mechanism 3** reconstruction (see §16).
-- **Authority:** Read on control plane. May trigger backups. **May not restore** — restoration is a human-authorized action.
-- **Failure behavior:** If control-plane audit logs are unreachable, raises an alert. If backup coverage gaps leave a period unreconstructable, flags the gap explicitly rather than letting it be discovered during an investigation.
-- **Implementation:** Driven by the **ccloud CLI**, whose noun-verb consistency, JSON-on-every-command output, and service-account RBAC make it directly agent-operable. The agent holds a scoped service account, not administrator credentials.
-- **Notes:** Two real gaps motivate this agent. First, **§17 claims non-repudiation, but v2.0 could not detect an administrator altering the cluster itself** — the audit trail covered belief-layer transitions and not substrate-layer ones. Second, **§16 Mechanism 2 is bounded by the GC window, and §26.9 shows the system failing to answer a day-11 question because of it.** Backup-anchored reconstruction closes both.
-
 ---
 
 ## 11. Authority Matrix
@@ -798,16 +778,12 @@ Each agent is specified with: role, inputs, outputs, authority, failure behavior
 | A9 Recall | — | — | — | ✓ | — | — | — |
 | A10 Audit | — | — | — | ✓ | ✓ | ✓ | — |
 | A17 Telemetry | — | — | — | — | — | — | metrics |
-| A18 Posture | — | — | — | — | — | — | schema read |
-| A19 Custody | — | — | — | — | — | — | control plane |
 
-**Read the empty cells as the design.** The security properties live in what each agent *cannot* do. Five invariants fall directly out of this table:
+**Read the empty cells as the design.** The security properties live in what each agent *cannot* do. Three invariants fall directly out of this table:
 
 - **No agent can both author content and trust it.** (No row has both "write belief" and "issue verdict.")
 - **No agent can release from quarantine without a recorded human.** (Only A14 has release, and it requires reviewer identity.)
 - **No consumer-class agent can reach non-trusted content.** (A9's row is a single checkmark.)
-- **No agent that verifies the system can read the system's contents.** (A18 and A19 have zero belief-column access — an agent auditing the controls has no business reading the data those controls protect.)
-- **No agent can both hold administrative authority and touch beliefs.** (The `Admin` column and the belief columns are mutually exclusive across every row.)
 
 ---
 
@@ -822,14 +798,10 @@ If the build runs tight, agents may be merged in this order. Each merge names wh
 | 3 | A13 Rate limiting → drop | T10 undefended | Yes for demo, no for production claim |
 | 4 | A11 Canonicalizer → inline in A1 | Explicit ambiguity failure mode; correctness risk rises | Marginal |
 | 5 | A8 Consolidation → drop | Forgetting story weakens; TTL still demonstrates it | Yes |
-| 6 | A18 Posture → reduce scope to a one-shot check | Continuous drift detection; becomes a deploy-time assertion | Marginal |
-| 7 | A19 Custody → reduce to control-plane audit only, drop Mechanism 3 | Extended temporal horizon; §16 GC-window gap reopens | Marginal |
-| 8 | A2 Inference → drop | Cascade (A6) becomes undemonstrable | **No — cascade is a key differentiator** |
-| 9 | A15 Red-team → drop | §25 evaluation becomes impossible | **No — this is your evidence** |
+| 6 | A2 Inference → drop | Cascade (A6) becomes undemonstrable | **No — cascade is a key differentiator** |
+| 7 | A15 Red-team → drop | §25 evaluation becomes impossible | **No — this is your evidence** |
 
 **Never collapse:** A4 (gate), A6 (cascade), A7 (resolution), A9 (recall), A10 (audit). These five are the project.
-
-**Note on A18/A19 and submission requirements.** These two agents are the integration points for the Agent Skills Repo and the ccloud CLI respectively. Collapsing them to zero would drop the project below the required two-CockroachDB-tool threshold — but **reducing their scope does not**, because the tool is still meaningfully used. If time is short, reduce rather than remove.
 
 ---
 
@@ -937,25 +909,13 @@ This is the answer to T3: a fact benign on arrival can be re-evaluated when popu
 
 ## 16. Temporal Reconstruction
 
-Three mechanisms, three questions.
+Two mechanisms, two questions.
 
-**Mechanism 1 — Bitemporal query (unbounded, curated).** Filter `tx_from <= T AND (tx_to IS NULL OR tx_to > T)` to get the belief set as understood at T. Works arbitrarily far back because it is ordinary data. Answers: *"what did we believe about the world at T, per our current record?"* **This is the durable, production mechanism.**
+**Mechanism 1 — Bitemporal query (unbounded).** Filter `tx_from <= T AND (tx_to IS NULL OR tx_to > T)` to get the belief set as understood at T. Works arbitrarily far back because it is ordinary data. **This is the durable, production mechanism.**
 
-**Mechanism 2 — MVCC snapshot read (bounded, exact).** Execute a read as of a past timestamp, reconstructing the exact committed state at that instant — including rows since revised. Answers: *"what would this query literally have returned at T?"* `[Certain]` Bounded by the garbage-collection retention window. `[Likely]` On free/serverless tiers this window is short and may not be configurable, constraining it to recent-history use.
+**Mechanism 2 — MVCC snapshot read (bounded).** Execute a read as of a past timestamp, reconstructing the exact committed state at that instant — including rows since revised. `[Certain]` Bounded by the garbage-collection retention window. `[Likely]` On free/serverless tiers this window is short and may not be configurable, constraining it to recent-history use.
 
-**Mechanism 3 — Backup-anchored reconstruction (unbounded, exact, coarse-grained).** *(new in v3.0)* A19 Substrate Custody maintains a backup catalog and can reconstruct exact substrate state at any backup point, beyond the GC horizon. Answers: *"what would this query literally have returned at T, where T is older than MVCC can reach?"* Granularity is limited to backup boundaries rather than arbitrary instants.
-
-**Why Mechanism 3 exists.** v2.0 had a real hole: §26.9 shows the system failing to answer a day-11 forensic question because MVCC history had aged out, and Mechanism 1's curated view — while unbounded — cannot show what was *literally* returned, including rows later judged wrong. For a regulated-domain audit ("prove what the system saw, not what you now think it saw"), that distinction matters. Mechanism 3 closes it.
-
-**Comparison:**
-
-| | Reach | Fidelity | Granularity | Cost |
-|---|---|---|---|---|
-| M1 Bitemporal | Unbounded | Curated (current understanding) | Arbitrary instant | Free (ordinary query) |
-| M2 MVCC | GC window only | Exact committed state | Arbitrary instant | Low |
-| M3 Backup-anchored | Unbounded | Exact committed state | Backup boundaries | High (restore required) |
-
-**Design consequence:** Mechanism 2 is the demo and the short-horizon forensic tool. **Mechanism 1 remains the product.** Mechanism 3 is the escalation path for questions M1 cannot answer with sufficient fidelity and M2 cannot reach. Any claim of arbitrary-instant exact replay beyond the GC window must be attributed to M3 and qualified by backup granularity, or a knowledgeable reviewer will correctly object. State all three explicitly in the README.
+**Design consequence:** Mechanism 2 is the demo and the short-horizon forensic tool. **Mechanism 1 is the product.** Any claim of arbitrary historical replay must be attributed to Mechanism 1, or a knowledgeable reviewer will correctly object. State this explicitly in the README.
 
 ---
 
@@ -967,19 +927,10 @@ Every state transition — creation, supersession, verdict, quarantine, release,
 
 **Attribution requires real identity.** Agent identities must be cryptographically established, not self-asserted strings in a request body.
 
-**Two audit layers, not one.** *(revised in v3.0)*
-
-**Belief-layer audit** covers every state transition inside the memory store, as described above.
-
-**Substrate-layer audit** covers actions taken against the cluster itself: schema changes, grant modifications, user creation, backup and restore operations, network configuration. A19 Substrate Custody pulls these from the control-plane audit log via the ccloud CLI and forwards them to the same WORM sink.
-
-**Why both are necessary.** v2.0's audit could prove that no *agent* corrupted a belief — but it could not prove that no *administrator* altered the database beneath the agents. An attacker with control-plane access could revoke a constraint, write directly, and restore it, leaving the belief-layer audit entirely clean. Non-repudiation that stops at the application boundary is not non-repudiation. Pairing substrate-layer audit with A18's continuous posture verification closes this: A19 records what was done to the cluster, and A18 independently detects whether the controls are currently intact.
-
 **What the audit enables:**
 - **Forensics:** which agent wrote the poisoned belief, from what source, and what it influenced before quarantine (joined against `retrieval_log`).
-- **Regulatory evidence:** tamper-evident record of automated decision-making, at both application and infrastructure layers.
+- **Regulatory evidence:** tamper-evident record of automated decision-making.
 - **Model debugging:** reconstruct the exact belief set behind any past decision.
-- **Insider-threat detection:** administrative actions against the substrate are recorded in storage the administrator cannot alter.
 
 ---
 
@@ -1105,23 +1056,7 @@ Human      A10              DB (bitemporal)      DB (MVCC)
 | Per-tenant semantic isolation | Prefix-partitioned vector index | Isolation is structural, not a filter someone can forget. |
 | Policy-driven forgetting | Row-level TTL | Expiry enforced by storage, not a cron that might not run. |
 | Governed agent access | Managed access layer, read-only default, audited | Write capability is opt-in and logged. |
-| Substrate-layer non-repudiation | Control-plane audit logs | Belief-layer audit cannot see administrative action against the cluster. |
-| Reconstruction beyond GC horizon | Backup catalog | MVCC history is compacted; backups are not. |
-| Control-drift detection | Schema/catalog introspection | The authority matrix is only real while its grants and constraints are intact. |
 | Data residency *(optional)* | Row-level regional placement | Per-row geographic domiciling for regulatory scope. |
-
-### 19.0 CockroachDB tool integration map *(new in v3.0)*
-
-Four tools, four distinct architectural roles. **No tool is present for compliance alone** — each closes a gap the design would otherwise have.
-
-| Tool | Used by | Architectural role | What breaks without it |
-|---|---|---|---|
-| **Distributed Vector Indexing** | A9 recall, S1 signal | Semantic recall over beliefs, prefix-partitioned by tenant so isolation is structural rather than a filter | No semantic recall; tenant isolation degrades to an application-level filter |
-| **Managed MCP Server** | A9 recall, A10 audit | **Second, independent enforcement layer on trust boundary TB4.** Read-only at the protocol layer means consumer agents have no write verb available at all, regardless of whether the view layer holds | TB4 rests on a single mechanism; a view-layer misconfiguration becomes a full compromise |
-| **ccloud CLI** | A19 custody | Control-plane audit ingestion and backup-anchored reconstruction (Mechanism 3) | Administrative action against the cluster is invisible to audit; §16 GC-window gap stays open |
-| **Agent Skills Repo** | A18 posture | Machine-executable schema, security, and observability expertise for continuous verification that the authority matrix's grants and constraints are intact | The security model decays silently; §11 becomes an aspiration rather than a control |
-
-**The MCP read-only default deserves emphasis**, because it is defense in depth rather than duplication. §22 enforces consumer restriction via role-scoped views — a database-layer control. MCP enforces it via protocol-layer capability restriction. These fail independently: a bad `GRANT` does not open a write verb that the protocol never exposed, and a protocol bypass still hits a view that filters. Design principle P6 says the database is the enforcement point; this adds a second enforcement point in front of it for the boundary that matters most.
 
 ### 19.1 The "why not single-node Postgres" answer
 
@@ -1150,23 +1085,6 @@ Add distributed multi-region row placement and it becomes four legs.
 | Secrets and agent credentials | Managed secret store | Referenced by `agent_identity.credential_ref`. |
 | Metrics, traces, alerts | Managed observability | A17. |
 | Review console | Lightweight web surface | A14. Minimal — disposition only. |
-| Posture verification runs | Scheduled serverless invocation | A18. Skills-driven schema introspection. |
-| Control-plane polling | Scheduled serverless invocation | A19. ccloud-driven; scoped service account. |
-| Multi-step agentic workflows *(optional)* | Managed agent orchestration | Cascade traversal and posture-remediation proposals are natural multi-step workflows. |
-
-### 20.1 AWS service usage summary
-
-The submission requires at least one AWS service. The architecture uses five, each in a distinct role:
-
-| Service | Role | Agents |
-|---|---|---|
-| **Amazon Bedrock** | Foundation models for extraction, inference, correction parsing, and S3 imperative-content classification; embedding model for all vectorization | A1, A2, A3, A4, A9, A12 |
-| **AWS Lambda** | CDC-triggered screening worker; cascade worker; scheduled drift, posture, and custody runs | A4, A5, A6, A18, A19 |
-| **Amazon S3** | WORM audit sink with Object Lock retention; changefeed sink (separate bucket) | Audit layer |
-| **AWS Secrets Manager** | Agent credentials referenced by `agent_identity.credential_ref` | All authenticated agents |
-| **Amazon CloudWatch** | Metrics, traces, alerting for §23 observability | A17 |
-
-**Note on bucket separation:** the changefeed sink and the WORM audit sink must be different buckets. Object Lock retention is irreversible; writing high-volume change events into a retention-locked bucket creates undeletable storage cost with no forensic benefit.
 
 ---
 
@@ -1549,7 +1467,7 @@ Ordered by risk retirement, not by architectural layer.
 
 **Phase 3 — Containment.** A6 cascade. A14 review disposition. `quarantine` table and lifecycle. WORM audit sink.
 
-**Phase 4 — Recall and audit.** A9 with mandatory filtering. A10 with Mechanisms 1 and 2. `retrieval_log`. (Mechanism 3 arrives with A19 in the self-verification phase.)
+**Phase 4 — Recall and audit.** A9 with mandatory filtering. A10 with both temporal mechanisms. `retrieval_log`.
 
 **Phase 5 — Depth.** Remaining signals S1, S4, S5, S6, S8. A5 drift detection. A15 red-team and the §25 evaluation.
 
@@ -1590,9 +1508,6 @@ Ordered by risk retirement, not by architectural layer.
 | **Incumbent / Challenger** | The existing belief and the new one contesting it during contradiction resolution. |
 | **Quarantine** | Isolation state; the belief exists, is auditable, and is structurally unretrievable. |
 | **Supersession** | Replacing a belief by closing its validity window and linking successor to predecessor — never deleting. |
-| **Control drift** | Silent degradation of the grants, constraints, and views that enforce the authority matrix. Detected by A18. |
-| **Posture baseline** | The expected state of all enforcing controls, captured at deployment and compared against on every A18 run. |
-| **Substrate-layer audit** | Record of administrative actions against the cluster itself, as distinct from belief-layer state transitions. |
 | **Temporal decoupling** | The property that a poisoned memory's write and its exploitation are separated in time. |
 | **Trust tier** | Provenance classification of a source, assigned by us, never asserted by the source. |
 | **Write skew** | An anomaly permitted under weak isolation where concurrent transactions each read consistent state but produce a combined result no serial order could. |

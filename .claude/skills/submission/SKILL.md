@@ -37,15 +37,14 @@ From BUILD-PLAN §12: "Start this phase earlier than feels comfortable. Judges m
 
 7. **Evaluation results** — honest numbers from `eval/results/metrics.json`, including the bad ones
 
-8. **CockroachDB tools used** — specific:
-   - Serializable isolation: enforces contradiction resolution correctness; demonstrated by Phase 8 concurrency test
-   - Native CDC/changefeeds: guarantees no committed write escapes screening
-   - AS OF SYSTEM TIME (MVCC): short-horizon forensic reconstruction
-   - Prefix-partitioned vector index: structural tenant isolation (not a filter)
-   - Row-level TTL: policy-driven forgetting on working_memory
-   - [If built] REGIONAL BY ROW: per-tenant geographic domiciling
+8. **CockroachDB tools used** — specific (all four must be identified):
+   - **Distributed Vector Indexing:** prefix-partitioned vector index on `(tenant_id, embedding)` — structural tenant isolation (not a filter); enables nearest-neighbor recall search
+   - **Managed MCP Server:** A9/A10 read transport (endpoint: `cockroachlabs.cloud/mcp`); second enforcement layer on consumer trust boundary; write verb absent at protocol layer
+   - **ccloud CLI:** A19 substrate custody — ingests control-plane audit to WORM sink; maintains backup catalog for Mechanism 3 temporal reconstruction
+   - **Agent Skills Repo:** A18 posture verification — security, schema-design, and observability skill families used to verify role grants, constraints, views, and TTL against committed baseline
+   - (Also used but not among the four required tools: Serializable isolation, native CDC/changefeeds, AS OF SYSTEM TIME, Row-level TTL)
 
-9. **AWS services used** — specific (see aws-services skill)
+9. **AWS services used** — specific (all five must be identified, see aws-services skill)
 
 10. **Known limitations** — mandatory honest disclosures:
     - MVCC window bound (measured at N minutes/hours per V3 spike)
@@ -81,8 +80,9 @@ Record with seeded, deterministic data. Every moment must be reproducible. Use `
 | 0:20–1:00 | Two agents write contradictory facts; retry fires; clean chain; split-screen with READ COMMITTED losing a write | Memory design + why-not-Postgres | **Longest segment — this is the thesis** |
 | 1:00–1:40 | Imperative-content injection → gate catches → quarantine with S3 signal breakdown → cascade re-screens derived beliefs | The contribution | Show signal_scores JSON on screen |
 | 1:40–2:10 | Recall query returns correct answer; quarantined belief not in results even with direct SQL as role_consumer | Production readiness | Show the role-bypass test failing |
-| 2:10–2:40 | "What did it believe at T" — bitemporal answer; WORM audit trail; delete attempt fails | Audit + non-repudiation | Show the S3 AccessDenied error on screen |
-| 2:40–3:00 | Architecture diagram + evaluation numbers + one-line pitch | Close | Keep it tight |
+| 2:10–2:35 | "What did it believe at T" — bitemporal answer; WORM audit trail; delete attempt fails | Audit + non-repudiation | Show the S3 AccessDenied error on screen |
+| 2:35–2:50 | A18 detects a deliberate REVOKE drift within one cycle; A19 surfaces an admin action in WORM substrate audit | T11/T12 defense; four-tool integration | Show posture_drift record and control_plane_event record side-by-side |
+| 2:50–3:00 | Architecture diagram + evaluation numbers + one-line pitch | Close | Keep it tight |
 
 **Record each segment separately.** Edit in post to tighten pacing. The first full-length recording always runs over — plan for two or three takes.
 
@@ -99,14 +99,18 @@ Work through this before the deadline, not on deadline day.
 - [ ] Demo app URL live and reachable from a browser
 - [ ] Video under 3 minutes, public on YouTube or Vimeo (not unlisted — public)
 - [ ] Video explicitly shows the memory layer at work (per submission rules)
-- [ ] Written identification of ≥2 CockroachDB tools and how they were used
-- [ ] Written identification of ≥1 AWS service and how it was used
+- [ ] Video includes A18/A19 shot (2:35–2:50) showing T11/T12 defense
+- [ ] Written identification of all four CockroachDB tools and how each was used: Distributed Vector Indexing, Managed MCP Server, ccloud CLI, Agent Skills Repo
+- [ ] Tool removal test for each of the four CockroachDB tools committed and passing: `test_removal_vector_index`, `test_removal_mcp_server`, `test_removal_ccloud`, `test_removal_agent_skills`
+- [ ] Written identification of all five AWS services and how each was used: Bedrock, Lambda, S3, Secrets Manager, CloudWatch
 - [ ] Architecture diagram included
 - [ ] All dependencies in requirements.txt and `.env.example` present
 - [ ] `eval/results/metrics.json` committed
 - [ ] `docs/VERIFICATIONS.md` complete (V1–V6 findings)
+- [ ] `docs/posture-baseline.json` committed
 - [ ] `docs/BUDGET.md` updated with final spend
 - [ ] No credentials committed — run `git log --all -p | grep -E '(password|secret|key|token)' | grep -v example` before pushing
+- [ ] CP3.5 evidence documented: all four tool removal tests ran and failed as expected
 - [ ] Devpost submission form completed before deadline
 
 ---

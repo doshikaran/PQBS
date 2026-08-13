@@ -74,6 +74,7 @@ CDC event → A4 (Screening Gate)
 Query → A12 (same embedding model) → Vector search
          FILTER: status=trusted AND tx_to IS NULL AND valid window
          VIA: role_consumer → trusted_current_beliefs view
+         VIA: CockroachDB Cloud Managed MCP Server (second enforcement layer)
          → A9 Recall → answer + citations
          → retrieval_log (what was ACTUALLY returned)
 ```
@@ -161,16 +162,41 @@ Do not conflate them. MVCC is the demo/short-horizon tool. Bitemporal columns ar
 |---|---|---|
 | Producer | A1, A2, A3, A16 | Write `pending` beliefs; cannot trust them |
 | Semantics | A11, A12, A7, A8 | Structure beliefs; run resolution |
-| Integrity | A4, A5, A6, A13, A14, A15 | Decide trust; cascade; review; evaluate |
-| Consumer | A9, A10 | Read-only; cannot write or touch quarantine |
+| Integrity | A4, A5, A6, A13, A14, A15, A18, A19 | Decide trust; cascade; review; evaluate; verify posture; monitor substrate |
+| Consumer | A9, A10 | Read-only via MCP Server; cannot write or touch quarantine |
 | Platform | A17 | Telemetry only |
 
-Never collapse: A4 (gate), A6 (cascade), A7 (resolution), A9 (recall), A10 (audit). These five are the project.
+Never collapse: A4 (gate), A6 (cascade), A7 (resolution), A9 (recall), A10 (audit). These five are the project. A18 and A19 may be reduced in scope but cannot be removed — they are the integration points for Agent Skills Repo and ccloud CLI (required for four-tool submission threshold).
 
 ---
 
 ## Phase Sequence
 
-P0 (verifications) → P1 (interfaces) → P2 (schema) → P3 (write path) → P4 (integrity) → P5 (containment) → P6 (recall) → P7 (depth) → P8 (evaluation) → P9 (extensions) → P10 (submission)
+P0 (verifications) → P1 (interfaces) → P2 (schema) → P3 (write path) → P4 (integrity) → P5 (containment) → P6 (recall + MCP) → P6.5 (posture + custody) → P7 (depth) → P8 (evaluation) → P9 (extensions) → P10 (submission)
 
 Do not advance past a phase without its exit gate passing. The Lead determines gate passage.
+
+## Four CockroachDB Tools (Submission Requirement)
+
+All four must be integrated in load-bearing roles, each with a named failing removal test:
+
+| Tool | Load-bearing use | Owner | Removal test |
+|---|---|---|---|
+| Distributed Vector Indexing | Nearest-neighbor recall search; structural tenant isolation via prefix | E1 | `test_removal_vector_index` |
+| Managed MCP Server | A9/A10 read transport; second enforcement layer on TB4 | E4 | `test_removal_mcp_server` |
+| ccloud CLI | A19 control-plane audit ingestion; backup catalog; Mechanism 3 | E3 | `test_removal_ccloud` |
+| Agent Skills Repo | A18 posture verification (security, schema-design, observability families) | E3 | `test_removal_agent_skills` |
+
+## Two Threat Model Additions (Design v3.0)
+
+| Threat | Defense |
+|---|---|
+| T11 — Control drift (unauthorized REVOKE or DDL change) | A18 detects within one polling cycle; alert + WORM record |
+| T12 — Substrate tampering (admin action on control plane) | A18 + A19; A19 surfaces admin actions in substrate-layer WORM audit |
+
+## Two Audit Layers (Design §17)
+
+| Layer | What it captures | Who emits | Where |
+|---|---|---|---|
+| Belief-layer | Every belief state transition | E1, E2, E3 agents | WORM bucket (S3 Object Lock) |
+| Substrate-layer | Control-plane events (admin actions, role changes, backup operations) | A19 via ccloud CLI | Same WORM bucket, distinct key prefix |

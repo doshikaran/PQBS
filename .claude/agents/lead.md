@@ -27,8 +27,8 @@ These documents are the source of truth. Do not redesign the architecture or inv
 |---|---|---|
 | E1 | Substrate | Schema, migrations, DB roles, serializable transactions, retry semantics, canonicalization (A11), resolution (A7), write path |
 | E2 | Integrity | CDC wiring, screening gate (A4), signals S1–S8, verdict composition |
-| E3 | Containment | Cascade (A6), quarantine lifecycle, review disposition (A14), WORM audit sink, drift detection (A5), inference (A2) |
-| E4 | Surface | Recall path (A9), audit queries (A10), temporal reconstruction, bitemporal + MVCC queries, demo UI |
+| E3 | Containment | Cascade (A6), quarantine lifecycle, review disposition (A14), WORM audit sink, drift detection (A5), inference (A2), posture verification (A18), substrate custody (A19) |
+| E4 | Surface | Recall path (A9), audit queries (A10), temporal reconstruction, bitemporal + MVCC + backup-anchored queries, MCP Server read transport, demo UI |
 | E5 | Evidence | Evaluation harness (A15), red-team corpus, contention harness, observability (A17), telemetry, README, video, submission |
 
 **Skills available to you:** `project-architecture`, `build-plan-execution`, `interface-contracts`
@@ -45,7 +45,8 @@ The project is phase-gated. Phases must not be skipped or reordered.
 | P3 | E1 | Write path: retry wrapper, A11, A12, A7, A1, A3 | §26.7 concurrency moment reproduces end-to-end |
 | P4 | E2 | CDC wiring, screening gate, S2/S3/S7, fail-closed test | Poisoned belief never becomes retrievable; verdict explains why |
 | P5 | E3 | Cascade, quarantine, review, WORM audit | §26.8 cascade moment reproduces; WORM delete attempt fails |
-| P6 | E4 | Recall, audit, both temporal mechanisms, demo surface | §26.9 bitemporal query works beyond MVCC window |
+| P6 | E4 | Recall, audit, both temporal mechanisms, MCP Server read transport, demo surface | §26.9 bitemporal query works beyond MVCC window; A9/A10 read through MCP |
+| P6.5 | E3 | A18 posture verification, A19 substrate custody, Mechanism 3 | All four CockroachDB tools integrated; each has a failing removal test |
 | P7 | E2/E3/E5 | Remaining signals, drift, observability, 13 failure-mode tests | All 13 failure-mode tests pass |
 | P8 | E5 | Evaluation: 3 corpora, 6 metrics, READ COMMITTED comparison | All metrics committed to eval/results/; comparison demonstrates anomaly |
 | P9 | Lead | Optional extensions (scope decision first) | Written decision on every extension |
@@ -86,6 +87,7 @@ Before allowing any phase to begin:
 | CP1 | P2 | Everyone connects to shared schema; negative tests pass for all owners |
 | CP2 | P4 | E1 write path feeds E2 gate end-to-end via ChangeEvent contract |
 | CP3 | P6 | Full path: write → screen → cascade → recall → audit |
+| CP3.5 | P6.5 | All four CockroachDB tools verified integrated; run removal test for each (each must fail when the tool is removed) |
 | CP4 | P8 | Evaluation numbers reviewed; agree on what goes in the README |
 
 At each CP, collect evidence from all owners. Do not declare CP passed based on assertions.
@@ -132,3 +134,6 @@ Keep the build-plan §15 risk register in mind at all times. The highest-impact 
 3. **Cascade cycle** — hangs without a visited-set guard.
 4. **ChangeEvent contract mismatch** — Phase 4 stalls entirely.
 5. **README claims outrunning implementation** — a technical reviewer will probe this first.
+6. **MCP Server unusable (V4 spike failure)** — if MCP cannot be used, fall back to direct connection and make Phase 6.5 mandatory to compensate for the lost tool count.
+7. **A18/A19 scope collapse** — these agents may be reduced in scope but cannot be removed; they are the integration points for Agent Skills Repo and ccloud CLI (required for four-tool submission threshold).
+8. **Posture drift undetected** — A18 only reports; it cannot remediate. On detection, a human must act.

@@ -10,6 +10,8 @@ An audit log that lives inside the system it audits can be altered by anyone who
 
 **From design §17:** "Write-once storage with retention locking means even full administrative compromise cannot rewrite history."
 
+Design v3.0 §17 adds a **second audit layer** (substrate-layer) complementing the existing belief-layer audit. Both layers write to the WORM bucket under distinct key prefixes.
+
 ---
 
 ## S3 Object Lock Configuration
@@ -52,6 +54,31 @@ pqbs-audit-dev     # No retention lock — development and test data
 
 **Never write test data into the production WORM bucket.** Those records cannot be deleted, which creates permanent storage cost and pollutes the audit history. Use the dev bucket during development and testing.
 
+## Two Audit Layers (Design §17 v3.0)
+
+PQBS maintains two distinct audit layers in the WORM bucket, separated by key prefix:
+
+| Layer | Key prefix | What it captures | Emitter |
+|---|---|---|---|
+| Belief-layer | `beliefs/<tenant_id>/<belief_id>/` | Every belief state transition | E1, E2, E3 agents |
+| Substrate-layer | `substrate/<event_type>/<timestamp>/` | Control-plane events (admin actions, role changes, REVOKE, backup operations) | A19 via ccloud CLI |
+
+The substrate-layer records defend against T12 (substrate tampering). An admin action visible in the CockroachDB Cloud control plane will appear in the substrate-layer audit within one A19 polling cycle.
+
+### Substrate Audit Record Format
+
+```python
+class SubstrateAuditRecord(BaseModel):
+    event_id: UUID
+    event_type: str          # e.g., 'admin_action', 'role_change', 'backup_triggered'
+    source: Literal['ccloud']
+    raw_event: dict          # verbatim ccloud JSON output for the event
+    ingested_at: datetime    # when A19 polled and ingested this event
+    cluster_id: str
+```
+
+Write substrate records to the WORM bucket under the `substrate/` prefix using the same `put_object` pattern as belief-layer records. The same COMPLIANCE-mode bucket applies — substrate records are equally immutable.
+
 ---
 
 ## Audit Record Format
@@ -72,9 +99,9 @@ class AuditRecord(BaseModel):
 
 ---
 
-## Six Required Transition Types
+## Six Required Belief-Layer Transition Types
 
-Every belief lifecycle transition must emit an audit record:
+Every belief lifecycle transition must emit a belief-layer audit record:
 
 | Event type | Trigger | Emitter |
 |---|---|---|
@@ -84,6 +111,15 @@ Every belief lifecycle transition must emit an audit record:
 | `quarantined` | Belief isolated by gate | E2 A4 screening |
 | `released` | Reviewer releases from quarantine | E3 A14 review |
 | `rejected` | Reviewer rejects from quarantine | E3 A14 review |
+
+## Additional Substrate-Layer Event Types (A18/A19)
+
+| Event type | Trigger | Emitter |
+|---|---|---|
+| `posture_attestation` | A18 verifies live schema matches baseline — no drift | E3 A18 |
+| `posture_drift` | A18 detects deviation from `docs/posture-baseline.json` | E3 A18 |
+| `control_plane_event` | A19 ingests an event from ccloud audit log | E3 A19 |
+| `backup_catalog_update` | A19 records a change in backup state | E3 A19 |
 
 ---
 

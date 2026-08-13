@@ -130,7 +130,7 @@ Checklist:
 
 ### Phase 6 — Recall (E4)
 
-**Exit gate:** Design §26.9 reproduces: bitemporal query works beyond MVCC window; Mechanism 2 failure is visible and explained.
+**Exit gate:** Design §26.9 reproduces: bitemporal query works beyond MVCC window; Mechanism 2 failure is visible and explained. A9 and A10 read through the MCP Server; a write attempt through MCP fails at the protocol layer.
 
 Checklist:
 - [ ] Recall enforced at view layer (not application code)
@@ -140,6 +140,33 @@ Checklist:
 - [ ] Mechanism 2 (MVCC) fails gracefully beyond window
 - [ ] Attribution queries return agent identity and provenance chain
 - [ ] Recall latency p50 < 600ms
+- [ ] A9 and A10 read through the CockroachDB Cloud Managed MCP Server
+- [ ] MCP write attempt fails at the PROTOCOL layer (not application layer)
+- [ ] MCP audit log retrievable after a consumer session
+
+---
+
+### Phase 6.5 — Self-Verification: Posture and Custody (E3)
+
+**Exit gate:** All four CockroachDB tools are integrated in load-bearing roles, and each has a test that fails if the tool is removed.
+
+Implements: design §10 A18/A19, §16 M3, §17 two-layer audit, §19.0, threats T11/T12.
+
+Checklist:
+- [ ] Agent Skills Repo installed; security, schema-design, observability skill families identified
+- [ ] Posture baseline captured and committed as `docs/posture-baseline.json`
+- [ ] A18 runs on schedule via Lambda; writes attestations to WORM sink
+- [ ] Drift test passes: deliberate REVOKE detected and alerted within one cycle
+- [ ] Negative test: A18 confirmed cannot remediate (no DDL, no GRANT authority)
+- [ ] ccloud service account created with scoped RBAC (read + backup-trigger; no restore)
+- [ ] A19 ingests control-plane audit to WORM sink (substrate-layer records)
+- [ ] Insider-threat test: admin action surfaces in WORM substrate audit within one polling cycle
+- [ ] Negative test: A19 confirmed cannot restore (service account lacks restore authority)
+- [ ] Mechanism 3 answers a query beyond the MVCC GC window using backup catalog
+- [ ] Backup coverage gaps reported explicitly
+- [ ] Removal test for Agent Skills Repo: `test_removal_agent_skills` fails when repo removed
+- [ ] Removal test for ccloud CLI: `test_removal_ccloud` fails when ccloud removed
+- [ ] (Plus removal tests for vector index and MCP Server from Phase 6, now all four confirmed at CP3.5)
 
 ---
 
@@ -176,7 +203,8 @@ Checklist:
 |---|---|---|
 | CP1 | P2 | Everyone connects to schema; negative tests pass for all owners |
 | CP2 | P4 | Write path feeds gate end-to-end via ChangeEvent |
-| CP3 | P6 | Full path: write → screen → cascade → recall → audit |
+| CP3 | P6 | Full path: write → screen → cascade → recall → audit; MCP read transport verified |
+| CP3.5 | P6.5 | All four CockroachDB tools verified integrated; run removal test for each (each must fail when the tool is removed) |
 | CP4 | P8 | Evaluation numbers reviewed; agree on README framing |
 
 ---
@@ -191,14 +219,17 @@ Key design-doc sections → implementing phase:
 | §13 write path | P3 | E1 |
 | §14 integrity path | P4 | E2 |
 | §14.4 cascade | P5 | E3 |
-| §17 audit/WORM | P5 | E3 |
+| §17 two-layer audit/WORM | P5, P6.5 | E3 |
 | §15 recall path | P6 | E4 |
-| §16 temporal reconstruction | P6 | E4 |
+| §16 temporal reconstruction (M1, M2, M3) | P6, P6.5 | E4, E3 |
+| §8.5 MCP Server as read transport | P6 | E4 |
+| §10 A18/A19 agent specs | P6.5 | E3 |
+| §19.0 posture baseline | P6.5 | E3 |
+| §4.1 threat model (incl. T11, T12) | P6.5, P8 | E3, E5 |
 | §23 observability | P7 | E5 |
 | §24 failure modes | P7 | All |
 | §25 evaluation plan | P8 | E5 |
 | §26 worked example | P10 | E5 |
-| §4.1 threat model | P8 | E5 |
 
 Never explicitly deferred (out of scope): trained neural anomaly detection, production review UI, differential privacy, formal isolation verification, gate self-hardening.
 
