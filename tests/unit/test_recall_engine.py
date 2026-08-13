@@ -30,13 +30,13 @@ def _mock_conn(rows: list[dict[str, Any]] | None = None) -> MagicMock:
 
 
 def _make_request(**kwargs: Any) -> RecallRequest:
-    defaults = dict(
-        query="What does Alice do?",
-        tenant_id=_TENANT,
-        limit=5,
+    return RecallRequest(
+        query=kwargs.get("query", "What does Alice do?"),
+        tenant_id=kwargs.get("tenant_id", _TENANT),
+        limit=kwargs.get("limit", 5),
+        temporal_context=kwargs.get("temporal_context", TemporalContext()),
+        min_trust_score=kwargs.get("min_trust_score", 0.0),
     )
-    defaults.update(kwargs)
-    return RecallRequest(**defaults)
 
 
 # ---------------------------------------------------------------------------

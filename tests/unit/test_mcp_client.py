@@ -5,7 +5,6 @@ No network calls — all HTTP is mocked or tested via pre-flight guards.
 from __future__ import annotations
 
 import urllib.error
-from typing import Any
 from unittest.mock import MagicMock, patch
 
 import pytest
