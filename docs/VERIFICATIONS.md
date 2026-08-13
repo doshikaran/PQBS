@@ -1,3 +1,50 @@
+## Phase 6 — Recall and Audit Surface
+
+**A9 — RecallEngine:**
+- Queries v_trusted_current view (not belief directly) — structural enforcement
+- Vector search via <-> operator with tenant_id prefix
+- Retrieval log written on every recall with actual returned belief IDs
+- Temporal context filter: valid_at restricts to beliefs valid at point in time
+- Latency: not measured on live DB (no seeded corpus); target p50 < 600ms documented
+
+**A10 — AuditEngine:**
+- Mechanism 1 (bitemporal): uses tx_from/tx_to columns, unbounded
+- Mechanism 2 (MVCC): uses AS OF SYSTEM TIME, bounded by GC window (~1h on Serverless per V3)
+- Graceful degradation: MVCC beyond GC window returns error dict with suggestion
+- query_auto: selects mechanism based on timestamp age (< 24h → MVCC, older → bitemporal)
+- Attribution: belief + quarantine + influenced_queries chain
+- Bitemporal diff: added/removed beliefs between T1 and T2
+
+**MCP Server (TB4 second layer):**
+- CockroachDB Cloud MCP server configured in .mcp.json
+- OAuth authentication completed; cluster-id: 71b13406-ccdb-481e-b0dc-f4aa75718234
+- MCPReadClient enforces write-verb blocking at protocol layer (pre-flight check)
+- Write attempt (INSERT/UPDATE/DELETE/CREATE/DROP/GRANT/REVOKE) raises MCPProtocolError before HTTP call
+- Unit test: test_mcp_client.py confirms write-verb protection
+
+**Role enforcement:**
+- role_consumer restricted to v_trusted_current via DB grant (migration 0012_views)
+- quarantined/pending beliefs structurally inaccessible to role_consumer
+- Note: direct role-consumer login test requires live DB with role setup
+
+**Demo UI:**
+- FastAPI app at demo/ui/app.py; run: PYTHONPATH=src uvicorn demo.ui.app:app --port 8080
+- Screens: belief table, quarantine list, temporal query, recall search, health check
+- POST /recall JSON API for programmatic access
+- GET /health checks DB ping and MCP reachability
+
+**Unit tests:**
+- test_recall_engine.py: 6 tests — vector string format, v_trusted_current enforcement,
+  retrieval log insertion, parallel array consistency, temporal filter, trust score filter
+- test_audit_engine.py: 8 tests — tx_from/tx_to presence, no LIMIT (unbounded), AS OF
+  SYSTEM TIME, graceful GC error dict, auto-mechanism selection (recent→MVCC, old→bitemporal),
+  attribution keys, diff added/removed/counts
+- test_mcp_client.py: 10 tests — write verb blocking (INSERT/DELETE/UPDATE/CREATE/DROP),
+  SELECT allowed, health check error handling, HTTP error mapping (401→MCPAuthError,
+  405→MCPProtocolError, URLError→MCPConnectionError)
+
+---
+
 ## Phase 5 — Containment
 
 - A2 InferenceAgent: derives from trusted parents only; empty derived_from rejected (ValueError); non-trusted parent rejected (InsufficientTrustError)
