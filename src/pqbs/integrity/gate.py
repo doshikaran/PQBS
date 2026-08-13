@@ -19,7 +19,7 @@ from uuid import UUID, uuid4
 import psycopg
 import structlog
 
-from pqbs.contracts.cdc import ChangeEvent, BeliefSnapshot
+from pqbs.contracts.cdc import ChangeEvent
 from pqbs.contracts.enums import (
     BeliefStatus,
     Disposition,
@@ -28,7 +28,7 @@ from pqbs.contracts.enums import (
     VerdictValue,
 )
 from pqbs.contracts.signals import SignalEvidence, SignalScore
-from pqbs.contracts.verdicts import QuarantineRecord, Verdict
+from pqbs.contracts.verdicts import Verdict
 
 from pqbs.integrity.signals import (
     s1_embedding_anomaly,

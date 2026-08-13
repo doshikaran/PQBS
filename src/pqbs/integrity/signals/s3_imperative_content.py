@@ -83,7 +83,7 @@ def _call_bedrock(text: str, region: str) -> str:
     return classification
 
 
-def compute(snapshot: BeliefSnapshot, conn: psycopg.Connection[Any]) -> SignalScore:
+def compute(snapshot: BeliefSnapshot, _conn: psycopg.Connection[Any]) -> SignalScore:
     """Compute S3: imperative content detection via pre-filter + Bedrock classification."""
     t0 = time.perf_counter()
     text = snapshot.object

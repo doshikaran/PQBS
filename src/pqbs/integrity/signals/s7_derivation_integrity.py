@@ -36,8 +36,6 @@ def compute(snapshot: BeliefSnapshot, conn: psycopg.Connection[Any]) -> SignalSc
         (str(snapshot.provenance_id), str(snapshot.tenant_id)),
     ).fetchone()
 
-    latency_ms_check = time.perf_counter()
-
     if prov_row is None:
         latency_ms = int((time.perf_counter() - t0) * 1000)
         return SignalScore(

@@ -36,7 +36,7 @@ def _ensure_utc(dt: datetime) -> datetime:
     return dt
 
 
-def compute(snapshot: BeliefSnapshot, conn: psycopg.Connection[Any]) -> SignalScore:
+def compute(snapshot: BeliefSnapshot, _conn: psycopg.Connection[Any]) -> SignalScore:
     """Compute S8: temporal plausibility checks on valid_from / valid_to."""
     t0 = time.perf_counter()
     now = datetime.now(tz=timezone.utc)
