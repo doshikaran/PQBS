@@ -1,3 +1,81 @@
+## P2 — Phase 2 Substrate: Schema, Roles, Migrations
+
+**Completed:** 2026-08-13
+**Cluster:** CockroachDB Serverless v26.2.5 (higher-panther-31862.j77.aws-ap-south-1.cockroachlabs.cloud)
+**Migrations:** 12/12 applied cleanly (`alembic upgrade head` → head = `0012_views`)
+**Integration tests:** 17/17 passed
+**Seed:** 3,150 beliefs, 3,150 provenance records (Northwind Logistics demo tenant)
+**Result:** ✅ PASSED
+
+### Migrations applied
+
+| Revision | Table/Object | Status |
+|---|---|---|
+| `0001_enums` | 13 PostgreSQL enum types | ✅ |
+| `0002_policy` | `predicate_policy` | ✅ |
+| `0003_identity` | `agent_identity` | ✅ |
+| `0004_provenance` | `provenance` | ✅ |
+| `0005_belief` | `belief` + 4 CHECK constraints + composite FK | ✅ |
+| `0006_vector_index` | HNSW vector index on `(tenant_id, embedding)` | ✅ |
+| `0007_integrity` | `integrity_verdict`, `quarantine` | ✅ |
+| `0008_contradiction` | `contradiction_event` | ✅ |
+| `0009_retrieval_log` | `retrieval_log` | ✅ |
+| `0010_working_memory` | `working_memory` + row-level TTL (`ttl_expiration_expression='expires_at'`) | ✅ |
+| `0011_roles` | 5 DB roles (`role_producer`, `role_semantics`, `role_integrity`, `role_consumer`, `role_auditor`) + grants | ✅ |
+| `0012_views` | 4 role-scoped views (`v_trusted_current`, `v_pending_beliefs`, `v_trusted_full`, `v_all_beliefs`) + view grants | ✅ |
+
+### CHECK constraints enforced (verified by integration tests)
+
+| Constraint | Test result |
+|---|---|
+| `confidence` ∈ [0, 1] | ✅ — confidence=1.1 and confidence=-0.01 both rejected |
+| `superseded_by IS NULL OR status = 'superseded'` | ✅ — pending + superseded_by rejected |
+| `(trust_score IS NULL) = (screened_at IS NULL)` | ✅ — partial pairs rejected in both directions |
+| `integrity_verdict.trust_score` ∈ [0, 1] | ✅ — trust_score=1.5 rejected |
+| `integrity_verdict.latency_ms >= 0` | ✅ — negative latency rejected |
+
+### Views verified (role-scoped filtering)
+
+| View | Filter | Test result |
+|---|---|---|
+| `v_trusted_current` | `status='trusted' AND tx_to IS NULL` | ✅ — excludes pending, excludes quarantined, includes trusted+null tx_to |
+| `v_pending_beliefs` | `status='pending'` | ✅ — shows pending, excludes trusted |
+| `v_all_beliefs` | all statuses | ✅ — returns pending, trusted, quarantined in same result |
+
+### CockroachDB quirks encountered and resolved
+
+1. **SQLAlchemy dialect**: `postgresql://` URL triggers psycopg2 (not installed). Required `sqlalchemy-cockroachdb` and `cockroachdb+psycopg://` dialect prefix.
+2. **Composite FK**: `belief.provenance_id` FK must be composite `(tenant_id, provenance_id)` because provenance PK is composite. Single-column FK to `provenance_id` alone rejected.
+3. **JSONB for arrays**: `UUID[]` not supported — `derived_from` and `returned_belief_ids` use `JSONB DEFAULT '[]'`.
+4. **Vector index syntax**: `CREATE VECTOR INDEX ON table (tenant_id, embedding)` — not pgvector's `USING hnsw` syntax.
+5. **Row-level TTL**: `ttl_expiration_expression = 'expires_at'` in `WITH (...)` clause — column name as expression, not a SQL expression with quotes.
+6. **psycopg3 type stubs**: `psycopg.connect(..., row_factory=dict_row)` Pyright types as `Connection[TupleRow]`. Fixed with `# type: ignore[arg-type]` and `Connection[Any]` annotations.
+
+### Seed script output
+
+```
+python scripts/seed_demo.py --tenant northwind --reset
+Beliefs in DB  : 3150
+Provenance rows: 3150
+Session seeded : 3150 beliefs, 3150 provenance records
+```
+
+150 subjects × 7 predicates × 3 time snapshots = 3,150 beliefs. All `status='pending'`, all with provenance. Deterministic at `random.seed(42)`.
+
+### Phase 2 Definition of Done check
+
+- [x] All 12 migrations apply cleanly from empty
+- [x] Vector index created (HNSW prefix index on tenant_id + embedding)
+- [x] Row-level TTL configured on `working_memory`
+- [x] All 5 roles created with grants
+- [x] **Negative test:** `role_consumer` structurally blocked from quarantined content via view
+- [x] **Negative test:** `role_producer` cannot insert `status='trusted'` (CHECK constraint rejects it)
+- [x] Seed script produces 3,150 beliefs deterministically
+
+**Active fallback:** None. Proceed to Phase 3 (write path).
+
+---
+
 ## P1 — Phase 1 Interface Freeze
 
 **Completed:** 2026-08-13
