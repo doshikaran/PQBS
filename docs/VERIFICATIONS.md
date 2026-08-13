@@ -1,3 +1,18 @@
+## Phase 5 — Containment
+
+- A2 InferenceAgent: derives from trusted parents only; empty derived_from rejected (ValueError); non-trusted parent rejected (InsufficientTrustError)
+- A6 CascadeAgent: BFS traversal, cycle-safe (visited set), depth recorded, idempotent (pending-skip via UPDATE WHERE status != 'pending')
+- A14 ReviewAgent: release/reject with mandatory reviewed_by; QuarantineError on non-HELD disposition; audit record on each disposition
+- AuditSink: local (dev) + S3 WORM (prod) modes; fail-closed (AuditSinkError blocks write); checksum in every payload
+- Six audit transition types in use: BELIEF_QUARANTINED, BELIEF_RELEASED, BELIEF_REJECTED, CASCADE_INITIATED, CASCADE_COMPLETED, BELIEF_SCREENED
+- WORM bucket: S3 ObjectLock COMPLIANCE mode, 365-day retention configured
+- Unit tests: test_cascade.py, test_audit_sink.py, test_review.py — all pass
+- Integration tests: test_quarantine_lifecycle.py — require live DB (COCKROACH_URL)
+- Cascade cycle test: deliberate A→B→A cycle halts correctly (had_cycle=True, no infinite loop)
+- Fail-closed: audit sink unavailable → AuditSinkError raised (tested in test_audit_sink.py)
+
+---
+
 ## Phase 4 — Integrity Path
 
 - Signals S1–S8 implemented with per-signal evidence
