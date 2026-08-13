@@ -1,0 +1,57 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.backends.legacy:build"
+
+[project]
+name = "pqbs"
+version = "0.1.0"
+description = "Poison-Quarantine Belief Store — agentic memory with integrity screening"
+requires-python = ">=3.12"
+dependencies = [
+    "pydantic>=2.9",
+    "alembic>=1.13",
+    "boto3>=1.35",
+    "psycopg[binary]>=3.1",
+    "python-dotenv>=1.0",
+    "structlog>=24.0",
+    "numpy>=2.0",
+    "fastapi>=0.100",
+    "uvicorn>=0.30",
+    "sqlalchemy>=2.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0",
+    "pytest-asyncio>=0.24",
+    "pyright>=1.1",
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+asyncio_mode = "auto"
+addopts = "--tb=short --strict-markers"
+markers = [
+    "unit: Pure unit tests — no external dependencies",
+    "integration: Tests requiring a live CockroachDB connection",
+    "contention: Concurrency and contention tests — slow, run separately",
+    "evaluation: E5 evaluation harness — requires corpus and result paths",
+]
+
+[tool.pyright]
+include = ["src", "tests"]
+extraPaths = ["src"]
+pythonVersion = "3.12"
+pythonPlatform = "Linux"
+typeCheckingMode = "standard"
+reportMissingImports = true
+reportMissingTypeStubs = false
+reportUnusedImport = true
+venvPath = "."
+venv = ".venv"

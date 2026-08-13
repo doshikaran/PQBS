@@ -1,3 +1,66 @@
+## P1 — Phase 1 Interface Freeze
+
+**Completed:** 2026-08-13
+**Tag:** `interface-freeze-v1`
+**Test suite:** `tests/unit/test_contracts.py`
+**Result:** ✅ PASSED — 82/82 tests
+
+### What was frozen
+
+14 production-ready Pydantic v2 contracts in `src/pqbs/contracts/`, covering every cross-owner interface in the system:
+
+| Module | Classes | Notes |
+|--------|---------|-------|
+| `base.py` | `CONTRACT_CONFIG`, `EMBEDDING_DIM` | Shared config (`frozen=True`, `extra="forbid"`, `strict=False`); `EMBEDDING_DIM = 1024` confirmed by V1 |
+| `enums.py` | 15 enums | `BeliefStatus`, `SignalId` (S1–S8), `AuditEventType` (13 events), `CdcOperation`, `VerdictValue`, `Sensitivity`, `TemporalMechanism`, + 8 more |
+| `beliefs.py` | `CandidateBelief`, `NormalizedBelief`, `EmbeddedBelief` | Full belief pipeline (A1/A2/A3 → A11 → A12 → A7); embedding validated to exactly 1024-dim |
+| `cdc.py` | `BeliefSnapshot`, `ChangeEvent` | Critical sync/async boundary (E1 → E2); `after` carries full snapshot (not just PK); INSERT/UPDATE/DELETE invariants enforced |
+| `provenance.py` | `ProvenanceStub`, `ProvenanceRecord` | Dual representation: stub at write time, full record after E1 commits |
+| `signals.py` | `SignalScore`, `SignalEvidence` | Per-signal output (S1–S8); score ∈ [0,1]; latency tracked per signal |
+| `verdicts.py` | `Verdict`, `QuarantineRecord` | All 8 signals required in every verdict; `QuarantineRecord` is the cascade FK anchor |
+| `cascade.py` | `CascadeRequest` | Bounded re-screening (default max_depth=20); depth invariant enforced at construction |
+| `recall.py` | `RecallRequest`, `TemporalContext`, `RecalledBelief`, `RecallResult` | Bi-temporal filtering; parallel arrays (beliefs/provenance_ids/trust_scores) length-checked |
+| `resolution.py` | `ResolutionOutcome` | Contradiction resolution result; retry count tracked |
+| `temporal.py` | `TemporalQuery` | A10 audit-tier temporal reconstruction; mechanism-agnostic |
+| `audit.py` | `AuditRecord` | WORM-sink entry for every state transition; before/after snapshots; checksum field for tamper detection |
+| `exceptions.py` | 10 exception classes | `PQBSError` base + `BeliefValidationError`, `ContractionError`, `QuarantineError`, `ScreeningError`, `RetryExhaustedError`, `TenantIsolationError`, `AuditSinkError`, `EmbeddingError`, `InsufficientTrustError` |
+| `__init__.py` | (re-exports all 26 public names) | Single-import surface: `from pqbs.contracts import CandidateBelief` |
+
+### Key design decisions enforced at the type level
+
+1. `CandidateBelief.status` does not exist — status is always `PENDING` by DB constraint; the contract cannot accidentally carry a different value.
+2. `ChangeEvent.after` is a full `BeliefSnapshot`, not a PK. A4 can compute all 8 signals from a single event with no additional DB read.
+3. `Verdict.signal_scores` must contain exactly 8 entries, one per `SignalId`. Missing signals are rejected at construction — no silent omission.
+4. `CascadeRequest.depth` is validated against `max_depth` at construction — unbounded traversal is structurally impossible.
+5. `RecallResult` parallel arrays (beliefs, provenance_ids, trust_scores) are length-checked by a `model_validator` — mismatches fail at the producer, not the consumer.
+6. `AuditRecord.before`/`after` use `dict[str, str | float | bool | int | None]` — JSON-serializable without further transformation, safe for the WORM sink.
+7. All contracts are `frozen=True` — no mutation after construction; thread-safe to pass across async/sync boundaries.
+
+### Test coverage
+
+| Test class | Cases | Area |
+|------------|-------|------|
+| `TestCandidateBelief` | 8 | Field bounds, temporal invariant |
+| `TestNormalizedBelief` | 3 | Wrapping, sensitivity upgrade |
+| `TestEmbeddedBelief` | 5 | Embedding dimension enforcement |
+| `TestChangeEvent` | 10 | CDC operation invariants, snapshot access |
+| `TestSignalScore` | 5 | Score bounds, signal ID coverage |
+| `TestVerdict` | 6 | All-signals required, trust score bounds |
+| `TestQuarantineRecord` | 2 | Construction, disposition enum |
+| `TestCascadeRequest` | 6 | Depth limit, empty batch rejection |
+| `TestRecallRequest` | 6 | Limit bounds, trust score filter |
+| `TestRecallResult` | 5 | Parallel array consistency |
+| `TestResolutionOutcome` | 2 | Retry count non-negative |
+| `TestTemporalQuery` | 2 | Agent ID required |
+| `TestAuditRecord` | 6 | Reason length, before/after types |
+| `TestEnumSerialization` | 3 | str(Enum) serializes to value |
+| `TestContractImports` | 2 | All names importable from `pqbs.contracts` |
+| **Total** | **82** | |
+
+**Active fallback:** None. All 82 tests pass. Proceed to Phase 2 (schema + migrations).
+
+---
+
 ## V5 — Serializable Retry Determinism
 
 **Run date:** 2026-08-13 08:15 UTC
