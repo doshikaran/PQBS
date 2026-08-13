@@ -1,3 +1,43 @@
+## P3 — Phase 3 Write Path
+
+**Completed:** 2026-08-13
+**Unit tests:** 92/92 passed (82 contracts + 10 new Phase 3)
+**Integration tests:** 24/24 passed (17 schema + 7 write path)
+**Result:** ✅ PASSED
+
+### Components implemented
+
+| Component | File | Description |
+|---|---|---|
+| Retry wrapper | `substrate/retry.py` | `with_serializable_retry` — catches only SQLSTATE 40001, re-executes full txn body on retry, exponential backoff + jitter, `RetryExhaustedError` on exhaustion |
+| Transaction helpers | `substrate/transaction.py` | `begin_serializable`, `commit`, `rollback` — handles both autocommit and non-autocommit psycopg3 connections |
+| A11 Canonicalization | `agents/semantics/canonicalize.py` | 10 normalization rules (lowercase, numeric, tier, carrier, date_iso, boolean, etc.); ambiguous → `sensitivity=ELEVATED` |
+| A12 Embedding | `agents/semantics/embed.py` | `embed_text()` via Amazon Bedrock; single function shared by write and recall paths; computed before DB transaction |
+| A7 Resolution | `agents/semantics/resolve.py` | Resolution precedence: explicit_invalidation → source_tier → recency → confidence → deferred; `contradiction_event` written on every outcome |
+| A1 Ingestion | `agents/producer/ingest.py` | Bedrock extraction (Claude + Llama format handling) → A11 → A12 → A7; validates agent_identity before extraction |
+| A3 Correction | `agents/producer/correct.py` | Explicit-invalidation path; always passes `resolution_basis_override=EXPLICIT_INVALIDATION` |
+
+### Key behaviors verified by tests
+
+- **Retry re-reads on every attempt** — `fn` re-called from scratch; stale state structurally impossible
+- **Non-retryable errors propagate immediately** — only `SerializationFailure` (40001) triggers retry
+- **RetryExhaustedError on exhaustion** — isolation never downgraded (Security Invariant 4)
+- **Contention test live** — 3 concurrent threads writing different subjects, all 3 committed, no data loss
+- **Correction supersedes incumbent** — trusted belief set to `superseded`, challenger written as `pending`
+- **Multi-valued predicate allows parallel** — two beliefs for same subject+predicate both land as `pending`
+- **Tier canonicalization** — "Gold Tier" → "gold"; unknown tier → `sensitivity=ELEVATED`
+- **contradiction_event written even when incumbent retained** — conflict is never invisible
+
+### CockroachDB/psycopg3 quirk resolved
+
+`begin_serializable` must behave differently by connection mode:
+- **autocommit=True**: issue `BEGIN TRANSACTION ISOLATION LEVEL SERIALIZABLE`
+- **non-autocommit (default)**: psycopg3 already started an implicit transaction on first execute; use `SET TRANSACTION ISOLATION LEVEL SERIALIZABLE` instead — issuing a second `BEGIN` raises `ActiveSqlTransaction`
+
+**Active fallback:** None. Proceed to Phase 4 (integrity path / CDC / screening gate).
+
+---
+
 ## P2 — Phase 2 Substrate: Schema, Roles, Migrations
 
 **Completed:** 2026-08-13
