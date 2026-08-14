@@ -1,3 +1,67 @@
+## Phase 7 — Depth: Drift Detection, Observability, Failure-Mode Tests, React UI
+
+**Completed:** 2026-08-13
+**Unit tests:** 316/316 passed (includes 24 new Phase 7 tests)
+**Integration failure-mode tests:** 11/11 passed (unit-level subset; tenant_isolation requires live DB)
+**Pyright:** 0 errors on new files
+**Frontend build:** Vite 5.4.21 + React 18 + Tailwind 3.4 — 38 modules, 168KB JS, 13KB CSS
+
+### A5 — Drift Detection Agent
+
+- **D1 Contradiction burst:** counts contradiction_events per predicate over configurable window; threshold=5 fires "medium", 2x fires "high"
+- **D2 Write-character shift:** compares recent_rate to baseline_rate per agent; ratio > 3x with recent_count >= 3 fires alert
+- **D3 Single-origin cluster:** finds predicates where >= min_cluster_size trusted beliefs share one source_digest (T4 threat)
+- **D4 Sleeper detection:** agents with no writes for dormant_days that suddenly burst burst_threshold+ writes in burst_hours (T3 pattern)
+- All four detectors run in `run_drift_scan`; each alert emits a POSTURE_DRIFT_DETECTED audit record via AuditSink
+- Authority: read-only (no direct quarantine); emits audit records only
+- Unit tests: `tests/unit/test_drift.py` — 13 tests covering threshold crossing, severity levels, audit emit count
+
+### A17 — Telemetry (MetricsCollector + TelemetryAgent)
+
+- **Four metric families:** health (write latency, screening lag, recall latency, retry rate, CDC lag), integrity (quarantine by reason, trust scores, cascade depths, review queue), security (anomaly scores, contradiction bursts by predicate, quarantine by agent, imperative detections), belief_counts (total/trusted/quarantined/pending/inconclusive/superseded)
+- **In-process collector:** thread-safe with `threading.Lock()`; all lists/counters updated via `record_*` methods
+- **DB-loaded snapshots:** `MetricsCollector.load_from_db()` queries belief, quarantine, and integrity_verdict tables
+- **Percentiles:** p50 and p99 computed from sorted lists; JSON-serializable snapshot
+- **TelemetryAgent:** background loop calling `refresh()` every configurable interval; `get_snapshot()` returns latest or on-demand
+- **Lifecycle traces:** `BeliefLifecycleTracer` with context-manager `span()` — emits structlog events at each span boundary with trace_id correlation
+- Unit tests: `tests/unit/test_metrics.py` — 15 tests covering write recording, retry rate, percentiles, quarantine by reason, JSON serializability, thread safety
+
+### Failure-Mode Tests
+
+File: `tests/integration/test_failure_modes.py` (marker: `@pytest.mark.integration`)
+
+| Test | Type | Status |
+|------|------|--------|
+| Embedding service down → EmbeddingError propagates | unit | ✅ |
+| Retry exhaustion → RetryExhaustedError (Security Invariant 4) | unit | ✅ |
+| Canonicalization ambiguous → sensitivity ELEVATED | unit | ✅ |
+| Unknown tier → sensitivity ELEVATED | unit | ✅ |
+| Audit sink unavailable → AuditSinkError (fail-closed) | unit | ✅ |
+| Cascade cycle A→B→A halts in < 2s | unit | ✅ |
+| Review release with empty reviewed_by → ValueError | unit | ✅ |
+| Review release with whitespace-only reviewer → ValueError | unit | ✅ |
+| Tenant isolation structural (cross-tenant query returns 0 foreign rows) | integration | requires COCKROACH_URL |
+| MCP INSERT blocked → MCPProtocolError | unit | ✅ |
+| MCP UPDATE blocked → MCPProtocolError | unit | ✅ |
+| MCP DELETE blocked → MCPProtocolError | unit | ✅ |
+
+### React + Tailwind Demo UI
+
+- **Stack:** Vite 5.4 + React 18.3 + Tailwind CSS 3.4 + PostCSS
+- **Backend:** FastAPI JSON-only API (HTML rendering removed), CORS middleware for `localhost:5173`
+- **5 screens:** BeliefTable, QuarantinePanel, TemporalQuery, RecallSearch, MetricsDashboard
+- **API endpoints:** `/api/health`, `/api/beliefs`, `/api/quarantine`, `/api/temporal`, `/api/recall` (POST), `/api/metrics`
+- **Features:**
+  - Status badges (color-coded: trusted=green, quarantined=red, pending=yellow, inconclusive=orange, superseded=gray)
+  - QuarantinePanel shows signal_scores as per-signal progress bars
+  - TemporalQuery supports bitemporal/MVCC radio selection; MVCC out-of-range returns 422 with orange suggestion text
+  - RecallSearch with limit slider (1–20)
+  - MetricsDashboard: 6-card grid — latency p50/p99, retry rate indicator, quarantine by reason (horizontal bar chart, no external lib), trust score distribution (visual histogram with zone bands), belief counts grid
+- **SPA routing:** built assets served via FastAPI StaticFiles from `frontend/dist/`
+- **Dev:** `npm run dev` in `demo/ui/frontend/` proxies `/api` to port 8080
+
+---
+
 ## Phase 6 — Recall and Audit Surface
 
 **A9 — RecallEngine:**
