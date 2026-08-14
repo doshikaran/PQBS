@@ -14,7 +14,8 @@
     "author_agent_id": "a1_ingestion",
     "confidence": 0.905,
     "evasion_target": null,
-    "notes": "Authoritative customer_tier for C001"
+    "notes": "Authoritative customer_tier for C001",
+    "embedding_type": "benign"
   },
   {
     "corpus_id": "ben_002",
@@ -31,7 +32,8 @@
     "author_agent_id": "a1_ingestion",
     "confidence": 0.91,
     "evasion_target": null,
-    "notes": "Authoritative customer_tier for C002"
+    "notes": "Authoritative customer_tier for C002",
+    "embedding_type": "benign"
   },
   {
     "corpus_id": "ben_003",
@@ -48,7 +50,8 @@
     "author_agent_id": "a1_ingestion",
     "confidence": 0.915,
     "evasion_target": null,
-    "notes": "Authoritative customer_tier for C003"
+    "notes": "Authoritative customer_tier for C003",
+    "embedding_type": "benign"
   },
   {
     "corpus_id": "ben_004",
@@ -65,7 +68,8 @@
     "author_agent_id": "a1_ingestion",
     "confidence": 0.92,
     "evasion_target": null,
-    "notes": "Authoritative customer_tier for C004"
+    "notes": "Authoritative customer_tier for C004",
+    "embedding_type": "benign"
   },
   {
     "corpus_id": "ben_005",
@@ -82,7 +86,8 @@
     "author_agent_id": "a1_ingestion",
     "confidence": 0.925,
     "evasion_target": null,
-    "notes": "Authoritative customer_tier for C005"
+    "notes": "Authoritative customer_tier for C005",
+    "embedding_type": "benign"
   },
   {
     "corpus_id": "ben_006",
@@ -99,7 +104,8 @@
     "author_agent_id": "a1_ingestion",
     "confidence": 0.93,
     "evasion_target": null,
-    "notes": "Authoritative customer_tier for C006"
+    "notes": "Authoritative customer_tier for C006",
+    "embedding_type": "benign"
   },
   {
     "corpus_id": "ben_007",
@@ -116,7 +122,8 @@
     "author_agent_id": "a1_ingestion",
     "confidence": 0.935,
     "evasion_target": null,
-    "notes": "Authoritative customer_tier for C007"
+    "notes": "Authoritative customer_tier for C007",
+    "embedding_type": "benign"
   },
   {
     "corpus_id": "ben_008",
@@ -133,7 +140,8 @@
     "author_agent_id": "a1_ingestion",
     "confidence": 0.94,
     "evasion_target": null,
-    "notes": "Authoritative customer_tier for C008"
+    "notes": "Authoritative customer_tier for C008",
+    "embedding_type": "benign"
   },
   {
     "corpus_id": "ben_009",
@@ -150,7 +158,8 @@
     "author_agent_id": "a1_ingestion",
     "confidence": 0.945,
     "evasion_target": null,
-    "notes": "Authoritative customer_tier for C009"
+    "notes": "Authoritative customer_tier for C009",
+    "embedding_type": "benign"
   },
   {
     "corpus_id": "ben_010",
@@ -167,7 +176,8 @@
     "author_agent_id": "a1_ingestion",
     "confidence": 0.9,
     "evasion_target": null,
-    "notes": "Authoritative customer_tier for C010"
+    "notes": "Authoritative customer_tier for C010",
+    "embedding_type": "benign"
   },
   {
     "corpus_id": "ben_011",
@@ -184,7 +194,8 @@
     "author_agent_id": "a1_ingestion",
     "confidence": 0.905,
     "evasion_target": null,
-    "notes": "Authoritative customer_tier for C011"
+    "notes": "Authoritative customer_tier for C011",
+    "embedding_type": "benign"
   },
   {
     "corpus_id": "ben_012",
@@ -201,7 +212,8 @@
     "author_agent_id": "a1_ingestion",
     "confidence": 0.91,
     "evasion_target": null,
-    "notes": "Authoritative customer_tier for C012"
+    "notes": "Authoritative customer_tier for C012",
+    "embedding_type": "benign"
   },
   {
     "corpus_id": "ben_013",
@@ -218,7 +230,8 @@
     "author_agent_id": "a1_ingestion",
     "confidence": 0.915,
     "evasion_target": null,
-    "notes": "Authoritative customer_tier for C013"
+    "notes": "Authoritative customer_tier for C013",
+    "embedding_type": "benign"
   },
   {
     "corpus_id": "ben_014",
@@ -235,7 +248,8 @@
     "author_agent_id": "a1_ingestion",
     "confidence": 0.92,
     "evasion_target": null,
-    "notes": "Authoritative customer_tier for C014"
+    "notes": "Authoritative customer_tier for C014",
+    "embedding_type": "benign"
   },
   {
     "corpus_id": "ben_015",
@@ -252,7 +266,8 @@
     "author_agent_id": "a1_ingestion",
     "confidence": 0.925,
     "evasion_target": null,
-    "notes": "Authoritative customer_tier for C015"
+    "notes": "Authoritative customer_tier for C015",
+    "embedding_type": "benign"
   },
   {
     "corpus_id": "ben_016",
@@ -269,7 +284,8 @@
     "author_agent_id": "a1_ingestion",
     "confidence": 0.93,
     "evasion_target": null,
-    "notes": "Authoritative customer_tier for C016"
+    "notes": "Authoritative customer_tier for C016",
+    "embedding_type": "benign"
   },
   {
     "corpus_id": "ben_017",
@@ -286,7 +302,8 @@
     "author_agent_id": "a1_ingestion",
     "confidence": 0.935,
     "evasion_target": null,
-    "notes": "Authoritative customer_tier for C017"
+    "notes": "Authoritative customer_tier for C017",
+    "embedding_type": "benign"
   },
   {
     "corpus_id": "ben_018",
@@ -303,7 +320,8 @@
     "author_agent_id": "a1_ingestion",
     "confidence": 0.94,
     "evasion_target": null,
-    "notes": "Authoritative customer_tier for C018"
+    "notes": "Authoritative customer_tier for C018",
+    "embedding_type": "benign"
   },
   {
     "corpus_id": "ben_019",
@@ -320,7 +338,8 @@
     "author_agent_id": "a1_ingestion",
     "confidence": 0.945,
     "evasion_target": null,
-    "notes": "Authoritative customer_tier for C019"
+    "notes": "Authoritative customer_tier for C019",
+    "embedding_type": "benign"
   },
   {
     "corpus_id": "ben_020",
@@ -337,7 +356,8 @@
     "author_agent_id": "a1_ingestion",
     "confidence": 0.9,
     "evasion_target": null,
-    "notes": "Authoritative customer_tier for C020"
+    "notes": "Authoritative customer_tier for C020",
+    "embedding_type": "benign"
   },
   {
     "corpus_id": "ben_021",
@@ -354,7 +374,8 @@
     "author_agent_id": "a1_ingestion",
     "confidence": 0.905,
     "evasion_target": null,
-    "notes": "Authoritative customer_tier for C021"
+    "notes": "Authoritative customer_tier for C021",
+    "embedding_type": "benign"
   },
   {
     "corpus_id": "ben_022",
@@ -371,7 +392,8 @@
     "author_agent_id": "a1_ingestion",
     "confidence": 0.91,
     "evasion_target": null,
-    "notes": "Authoritative customer_tier for C022"
+    "notes": "Authoritative customer_tier for C022",
+    "embedding_type": "benign"
   },
   {
     "corpus_id": "ben_023",
@@ -388,7 +410,8 @@
     "author_agent_id": "a1_ingestion",
     "confidence": 0.915,
     "evasion_target": null,
-    "notes": "Authoritative customer_tier for C023"
+    "notes": "Authoritative customer_tier for C023",
+    "embedding_type": "benign"
   },
   {
     "corpus_id": "ben_024",
@@ -405,7 +428,8 @@
     "author_agent_id": "a1_ingestion",
     "confidence": 0.92,
     "evasion_target": null,
-    "notes": "Authoritative customer_tier for C024"
+    "notes": "Authoritative customer_tier for C024",
+    "embedding_type": "benign"
   },
   {
     "corpus_id": "ben_025",
@@ -422,7 +446,8 @@
     "author_agent_id": "a1_ingestion",
     "confidence": 0.925,
     "evasion_target": null,
-    "notes": "Authoritative customer_tier for C025"
+    "notes": "Authoritative customer_tier for C025",
+    "embedding_type": "benign"
   },
   {
     "corpus_id": "ben_026",
@@ -439,7 +464,8 @@
     "author_agent_id": "a1_ingestion",
     "confidence": 0.93,
     "evasion_target": null,
-    "notes": "Authoritative customer_tier for C026"
+    "notes": "Authoritative customer_tier for C026",
+    "embedding_type": "benign"
   },
   {
     "corpus_id": "ben_027",
@@ -456,7 +482,8 @@
     "author_agent_id": "a1_ingestion",
     "confidence": 0.935,
     "evasion_target": null,
-    "notes": "Authoritative customer_tier for C027"
+    "notes": "Authoritative customer_tier for C027",
+    "embedding_type": "benign"
   },
   {
     "corpus_id": "ben_028",
@@ -473,7 +500,8 @@
     "author_agent_id": "a1_ingestion",
     "confidence": 0.94,
     "evasion_target": null,
-    "notes": "Authoritative customer_tier for C028"
+    "notes": "Authoritative customer_tier for C028",
+    "embedding_type": "benign"
   },
   {
     "corpus_id": "ben_029",
@@ -490,7 +518,8 @@
     "author_agent_id": "a1_ingestion",
     "confidence": 0.945,
     "evasion_target": null,
-    "notes": "Authoritative customer_tier for C029"
+    "notes": "Authoritative customer_tier for C029",
+    "embedding_type": "benign"
   },
   {
     "corpus_id": "ben_030",
@@ -507,7 +536,8 @@
     "author_agent_id": "a1_ingestion",
     "confidence": 0.9,
     "evasion_target": null,
-    "notes": "Authoritative customer_tier for C030"
+    "notes": "Authoritative customer_tier for C030",
+    "embedding_type": "benign"
   },
   {
     "corpus_id": "ben_031",
@@ -524,7 +554,8 @@
     "author_agent_id": "a1_ingestion",
     "confidence": 0.905,
     "evasion_target": null,
-    "notes": "Authoritative customer_tier for C031"
+    "notes": "Authoritative customer_tier for C031",
+    "embedding_type": "benign"
   },
   {
     "corpus_id": "ben_032",
@@ -541,7 +572,8 @@
     "author_agent_id": "a1_ingestion",
     "confidence": 0.91,
     "evasion_target": null,
-    "notes": "Authoritative customer_tier for C032"
+    "notes": "Authoritative customer_tier for C032",
+    "embedding_type": "benign"
   },
   {
     "corpus_id": "ben_033",
@@ -558,7 +590,8 @@
     "author_agent_id": "a1_ingestion",
     "confidence": 0.915,
     "evasion_target": null,
-    "notes": "Authoritative customer_tier for C033"
+    "notes": "Authoritative customer_tier for C033",
+    "embedding_type": "benign"
   },
   {
     "corpus_id": "ben_034",
@@ -575,7 +608,8 @@
     "author_agent_id": "a1_ingestion",
     "confidence": 0.92,
     "evasion_target": null,
-    "notes": "Authoritative customer_tier for C034"
+    "notes": "Authoritative customer_tier for C034",
+    "embedding_type": "benign"
   },
   {
     "corpus_id": "ben_035",
@@ -592,7 +626,8 @@
     "author_agent_id": "a1_ingestion",
     "confidence": 0.925,
     "evasion_target": null,
-    "notes": "Authoritative customer_tier for C035"
+    "notes": "Authoritative customer_tier for C035",
+    "embedding_type": "benign"
   },
   {
     "corpus_id": "ben_036",
@@ -609,7 +644,8 @@
     "author_agent_id": "a1_ingestion",
     "confidence": 0.93,
     "evasion_target": null,
-    "notes": "Authoritative customer_tier for C036"
+    "notes": "Authoritative customer_tier for C036",
+    "embedding_type": "benign"
   },
   {
     "corpus_id": "ben_037",
@@ -626,7 +662,8 @@
     "author_agent_id": "a1_ingestion",
     "confidence": 0.935,
     "evasion_target": null,
-    "notes": "Authoritative customer_tier for C037"
+    "notes": "Authoritative customer_tier for C037",
+    "embedding_type": "benign"
   },
   {
     "corpus_id": "ben_038",
@@ -643,7 +680,8 @@
     "author_agent_id": "a1_ingestion",
     "confidence": 0.94,
     "evasion_target": null,
-    "notes": "Authoritative customer_tier for C038"
+    "notes": "Authoritative customer_tier for C038",
+    "embedding_type": "benign"
   },
   {
     "corpus_id": "ben_039",
@@ -660,7 +698,8 @@
     "author_agent_id": "a1_ingestion",
     "confidence": 0.945,
     "evasion_target": null,
-    "notes": "Authoritative customer_tier for C039"
+    "notes": "Authoritative customer_tier for C039",
+    "embedding_type": "benign"
   },
   {
     "corpus_id": "ben_040",
@@ -677,7 +716,8 @@
     "author_agent_id": "a1_ingestion",
     "confidence": 0.9,
     "evasion_target": null,
-    "notes": "Authoritative customer_tier for C040"
+    "notes": "Authoritative customer_tier for C040",
+    "embedding_type": "benign"
   },
   {
     "corpus_id": "ben_041",
@@ -694,7 +734,8 @@
     "author_agent_id": "a1_ingestion",
     "confidence": 0.905,
     "evasion_target": null,
-    "notes": "Authoritative customer_tier for C041"
+    "notes": "Authoritative customer_tier for C041",
+    "embedding_type": "benign"
   },
   {
     "corpus_id": "ben_042",
@@ -711,7 +752,8 @@
     "author_agent_id": "a1_ingestion",
     "confidence": 0.91,
     "evasion_target": null,
-    "notes": "Authoritative customer_tier for C042"
+    "notes": "Authoritative customer_tier for C042",
+    "embedding_type": "benign"
   },
   {
     "corpus_id": "ben_043",
@@ -728,7 +770,8 @@
     "author_agent_id": "a1_ingestion",
     "confidence": 0.915,
     "evasion_target": null,
-    "notes": "Authoritative customer_tier for C043"
+    "notes": "Authoritative customer_tier for C043",
+    "embedding_type": "benign"
   },
   {
     "corpus_id": "ben_044",
@@ -745,7 +788,8 @@
     "author_agent_id": "a1_ingestion",
     "confidence": 0.92,
     "evasion_target": null,
-    "notes": "Authoritative customer_tier for C044"
+    "notes": "Authoritative customer_tier for C044",
+    "embedding_type": "benign"
   },
   {
     "corpus_id": "ben_045",
@@ -762,7 +806,8 @@
     "author_agent_id": "a1_ingestion",
     "confidence": 0.925,
     "evasion_target": null,
-    "notes": "Authoritative customer_tier for C045"
+    "notes": "Authoritative customer_tier for C045",
+    "embedding_type": "benign"
   },
   {
     "corpus_id": "ben_046",
@@ -779,7 +824,8 @@
     "author_agent_id": "a1_ingestion",
     "confidence": 0.93,
     "evasion_target": null,
-    "notes": "Authoritative customer_tier for C046"
+    "notes": "Authoritative customer_tier for C046",
+    "embedding_type": "benign"
   },
   {
     "corpus_id": "ben_047",
@@ -796,7 +842,8 @@
     "author_agent_id": "a1_ingestion",
     "confidence": 0.935,
     "evasion_target": null,
-    "notes": "Authoritative customer_tier for C047"
+    "notes": "Authoritative customer_tier for C047",
+    "embedding_type": "benign"
   },
   {
     "corpus_id": "ben_048",
@@ -813,7 +860,8 @@
     "author_agent_id": "a1_ingestion",
     "confidence": 0.94,
     "evasion_target": null,
-    "notes": "Authoritative customer_tier for C048"
+    "notes": "Authoritative customer_tier for C048",
+    "embedding_type": "benign"
   },
   {
     "corpus_id": "ben_049",
@@ -830,7 +878,8 @@
     "author_agent_id": "a1_ingestion",
     "confidence": 0.945,
     "evasion_target": null,
-    "notes": "Authoritative customer_tier for C049"
+    "notes": "Authoritative customer_tier for C049",
+    "embedding_type": "benign"
   },
   {
     "corpus_id": "ben_050",
@@ -847,7 +896,8 @@
     "author_agent_id": "a1_ingestion",
     "confidence": 0.9,
     "evasion_target": null,
-    "notes": "Authoritative customer_tier for C050"
+    "notes": "Authoritative customer_tier for C050",
+    "embedding_type": "benign"
   },
   {
     "corpus_id": "ben_051",
@@ -864,7 +914,8 @@
     "author_agent_id": "a1_ingestion",
     "confidence": 0.905,
     "evasion_target": null,
-    "notes": "Authoritative customer_tier for C051"
+    "notes": "Authoritative customer_tier for C051",
+    "embedding_type": "benign"
   },
   {
     "corpus_id": "ben_052",
@@ -881,7 +932,8 @@
     "author_agent_id": "a1_ingestion",
     "confidence": 0.91,
     "evasion_target": null,
-    "notes": "Authoritative customer_tier for C052"
+    "notes": "Authoritative customer_tier for C052",
+    "embedding_type": "benign"
   },
   {
     "corpus_id": "ben_053",
@@ -898,7 +950,8 @@
     "author_agent_id": "a1_ingestion",
     "confidence": 0.915,
     "evasion_target": null,
-    "notes": "Authoritative customer_tier for C053"
+    "notes": "Authoritative customer_tier for C053",
+    "embedding_type": "benign"
   },
   {
     "corpus_id": "ben_054",
@@ -915,7 +968,8 @@
     "author_agent_id": "a1_ingestion",
     "confidence": 0.92,
     "evasion_target": null,
-    "notes": "Authoritative customer_tier for C054"
+    "notes": "Authoritative customer_tier for C054",
+    "embedding_type": "benign"
   },
   {
     "corpus_id": "ben_055",
@@ -932,7 +986,8 @@
     "author_agent_id": "a1_ingestion",
     "confidence": 0.925,
     "evasion_target": null,
-    "notes": "Authoritative customer_tier for C055"
+    "notes": "Authoritative customer_tier for C055",
+    "embedding_type": "benign"
   },
   {
     "corpus_id": "ben_056",
@@ -949,7 +1004,8 @@
     "author_agent_id": "a1_ingestion",
     "confidence": 0.93,
     "evasion_target": null,
-    "notes": "Authoritative customer_tier for C056"
+    "notes": "Authoritative customer_tier for C056",
+    "embedding_type": "benign"
   },
   {
     "corpus_id": "ben_057",
@@ -966,7 +1022,8 @@
     "author_agent_id": "a1_ingestion",
     "confidence": 0.935,
     "evasion_target": null,
-    "notes": "Authoritative customer_tier for C057"
+    "notes": "Authoritative customer_tier for C057",
+    "embedding_type": "benign"
   },
   {
     "corpus_id": "ben_058",
@@ -983,7 +1040,8 @@
     "author_agent_id": "a1_ingestion",
     "confidence": 0.94,
     "evasion_target": null,
-    "notes": "Authoritative customer_tier for C058"
+    "notes": "Authoritative customer_tier for C058",
+    "embedding_type": "benign"
   },
   {
     "corpus_id": "ben_059",
@@ -1000,7 +1058,8 @@
     "author_agent_id": "a1_ingestion",
     "confidence": 0.945,
     "evasion_target": null,
-    "notes": "Authoritative customer_tier for C059"
+    "notes": "Authoritative customer_tier for C059",
+    "embedding_type": "benign"
   },
   {
     "corpus_id": "ben_060",
@@ -1017,7 +1076,8 @@
     "author_agent_id": "a1_ingestion",
     "confidence": 0.9,
     "evasion_target": null,
-    "notes": "Authoritative customer_tier for C060"
+    "notes": "Authoritative customer_tier for C060",
+    "embedding_type": "benign"
   },
   {
     "corpus_id": "ben_061",
@@ -1034,7 +1094,8 @@
     "author_agent_id": "a1_ingestion",
     "confidence": 0.905,
     "evasion_target": null,
-    "notes": "Authoritative customer_tier for C061"
+    "notes": "Authoritative customer_tier for C061",
+    "embedding_type": "benign"
   },
   {
     "corpus_id": "ben_062",
@@ -1051,7 +1112,8 @@
     "author_agent_id": "a1_ingestion",
     "confidence": 0.91,
     "evasion_target": null,
-    "notes": "Authoritative customer_tier for C062"
+    "notes": "Authoritative customer_tier for C062",
+    "embedding_type": "benign"
   },
   {
     "corpus_id": "ben_063",
@@ -1068,7 +1130,8 @@
     "author_agent_id": "a1_ingestion",
     "confidence": 0.915,
     "evasion_target": null,
-    "notes": "Authoritative customer_tier for C063"
+    "notes": "Authoritative customer_tier for C063",
+    "embedding_type": "benign"
   },
   {
     "corpus_id": "ben_064",
@@ -1085,7 +1148,8 @@
     "author_agent_id": "a1_ingestion",
     "confidence": 0.92,
     "evasion_target": null,
-    "notes": "Authoritative customer_tier for C064"
+    "notes": "Authoritative customer_tier for C064",
+    "embedding_type": "benign"
   },
   {
     "corpus_id": "ben_065",
@@ -1102,7 +1166,8 @@
     "author_agent_id": "a1_ingestion",
     "confidence": 0.925,
     "evasion_target": null,
-    "notes": "Authoritative customer_tier for C065"
+    "notes": "Authoritative customer_tier for C065",
+    "embedding_type": "benign"
   },
   {
     "corpus_id": "ben_066",
@@ -1119,7 +1184,8 @@
     "author_agent_id": "a1_ingestion",
     "confidence": 0.93,
     "evasion_target": null,
-    "notes": "Authoritative customer_tier for C066"
+    "notes": "Authoritative customer_tier for C066",
+    "embedding_type": "benign"
   },
   {
     "corpus_id": "ben_067",
@@ -1136,7 +1202,8 @@
     "author_agent_id": "a1_ingestion",
     "confidence": 0.935,
     "evasion_target": null,
-    "notes": "Authoritative customer_tier for C067"
+    "notes": "Authoritative customer_tier for C067",
+    "embedding_type": "benign"
   },
   {
     "corpus_id": "ben_068",
@@ -1153,7 +1220,8 @@
     "author_agent_id": "a1_ingestion",
     "confidence": 0.94,
     "evasion_target": null,
-    "notes": "Authoritative customer_tier for C068"
+    "notes": "Authoritative customer_tier for C068",
+    "embedding_type": "benign"
   },
   {
     "corpus_id": "ben_069",
@@ -1170,7 +1238,8 @@
     "author_agent_id": "a1_ingestion",
     "confidence": 0.945,
     "evasion_target": null,
-    "notes": "Authoritative customer_tier for C069"
+    "notes": "Authoritative customer_tier for C069",
+    "embedding_type": "benign"
   },
   {
     "corpus_id": "ben_070",
@@ -1187,7 +1256,8 @@
     "author_agent_id": "a1_ingestion",
     "confidence": 0.9,
     "evasion_target": null,
-    "notes": "Authoritative customer_tier for C070"
+    "notes": "Authoritative customer_tier for C070",
+    "embedding_type": "benign"
   },
   {
     "corpus_id": "ben_071",
@@ -1204,7 +1274,8 @@
     "author_agent_id": "a1_ingestion",
     "confidence": 0.905,
     "evasion_target": null,
-    "notes": "Authoritative customer_tier for C071"
+    "notes": "Authoritative customer_tier for C071",
+    "embedding_type": "benign"
   },
   {
     "corpus_id": "ben_072",
@@ -1221,7 +1292,8 @@
     "author_agent_id": "a1_ingestion",
     "confidence": 0.91,
     "evasion_target": null,
-    "notes": "Authoritative customer_tier for C072"
+    "notes": "Authoritative customer_tier for C072",
+    "embedding_type": "benign"
   },
   {
     "corpus_id": "ben_073",
@@ -1238,7 +1310,8 @@
     "author_agent_id": "a1_ingestion",
     "confidence": 0.915,
     "evasion_target": null,
-    "notes": "Authoritative customer_tier for C073"
+    "notes": "Authoritative customer_tier for C073",
+    "embedding_type": "benign"
   },
   {
     "corpus_id": "ben_074",
@@ -1255,7 +1328,8 @@
     "author_agent_id": "a1_ingestion",
     "confidence": 0.92,
     "evasion_target": null,
-    "notes": "Authoritative customer_tier for C074"
+    "notes": "Authoritative customer_tier for C074",
+    "embedding_type": "benign"
   },
   {
     "corpus_id": "ben_075",
@@ -1272,7 +1346,8 @@
     "author_agent_id": "a1_ingestion",
     "confidence": 0.925,
     "evasion_target": null,
-    "notes": "Authoritative customer_tier for C075"
+    "notes": "Authoritative customer_tier for C075",
+    "embedding_type": "benign"
   },
   {
     "corpus_id": "ben_076",
@@ -1289,7 +1364,8 @@
     "author_agent_id": "a1_ingestion",
     "confidence": 0.93,
     "evasion_target": null,
-    "notes": "Authoritative customer_tier for C076"
+    "notes": "Authoritative customer_tier for C076",
+    "embedding_type": "benign"
   },
   {
     "corpus_id": "ben_077",
@@ -1306,7 +1382,8 @@
     "author_agent_id": "a1_ingestion",
     "confidence": 0.935,
     "evasion_target": null,
-    "notes": "Authoritative customer_tier for C077"
+    "notes": "Authoritative customer_tier for C077",
+    "embedding_type": "benign"
   },
   {
     "corpus_id": "ben_078",
@@ -1323,7 +1400,8 @@
     "author_agent_id": "a1_ingestion",
     "confidence": 0.94,
     "evasion_target": null,
-    "notes": "Authoritative customer_tier for C078"
+    "notes": "Authoritative customer_tier for C078",
+    "embedding_type": "benign"
   },
   {
     "corpus_id": "ben_079",
@@ -1340,7 +1418,8 @@
     "author_agent_id": "a1_ingestion",
     "confidence": 0.945,
     "evasion_target": null,
-    "notes": "Authoritative customer_tier for C079"
+    "notes": "Authoritative customer_tier for C079",
+    "embedding_type": "benign"
   },
   {
     "corpus_id": "ben_080",
@@ -1357,7 +1436,8 @@
     "author_agent_id": "a1_ingestion",
     "confidence": 0.9,
     "evasion_target": null,
-    "notes": "Authoritative customer_tier for C080"
+    "notes": "Authoritative customer_tier for C080",
+    "embedding_type": "benign"
   },
   {
     "corpus_id": "ben_081",
@@ -1374,7 +1454,8 @@
     "author_agent_id": "a1_ingestion",
     "confidence": 0.905,
     "evasion_target": null,
-    "notes": "Authoritative customer_tier for C081"
+    "notes": "Authoritative customer_tier for C081",
+    "embedding_type": "benign"
   },
   {
     "corpus_id": "ben_082",
@@ -1391,7 +1472,8 @@
     "author_agent_id": "a1_ingestion",
     "confidence": 0.91,
     "evasion_target": null,
-    "notes": "Authoritative customer_tier for C082"
+    "notes": "Authoritative customer_tier for C082",
+    "embedding_type": "benign"
   },
   {
     "corpus_id": "ben_083",
@@ -1408,7 +1490,8 @@
     "author_agent_id": "a1_ingestion",
     "confidence": 0.915,
     "evasion_target": null,
-    "notes": "Authoritative customer_tier for C083"
+    "notes": "Authoritative customer_tier for C083",
+    "embedding_type": "benign"
   },
   {
     "corpus_id": "ben_084",
@@ -1425,7 +1508,8 @@
     "author_agent_id": "a1_ingestion",
     "confidence": 0.92,
     "evasion_target": null,
-    "notes": "Authoritative customer_tier for C084"
+    "notes": "Authoritative customer_tier for C084",
+    "embedding_type": "benign"
   },
   {
     "corpus_id": "ben_085",
@@ -1442,7 +1526,8 @@
     "author_agent_id": "a1_ingestion",
     "confidence": 0.925,
     "evasion_target": null,
-    "notes": "Authoritative customer_tier for C085"
+    "notes": "Authoritative customer_tier for C085",
+    "embedding_type": "benign"
   },
   {
     "corpus_id": "ben_086",
@@ -1459,7 +1544,8 @@
     "author_agent_id": "a1_ingestion",
     "confidence": 0.93,
     "evasion_target": null,
-    "notes": "Authoritative customer_tier for C086"
+    "notes": "Authoritative customer_tier for C086",
+    "embedding_type": "benign"
   },
   {
     "corpus_id": "ben_087",
@@ -1476,7 +1562,8 @@
     "author_agent_id": "a1_ingestion",
     "confidence": 0.935,
     "evasion_target": null,
-    "notes": "Authoritative customer_tier for C087"
+    "notes": "Authoritative customer_tier for C087",
+    "embedding_type": "benign"
   },
   {
     "corpus_id": "ben_088",
@@ -1493,7 +1580,8 @@
     "author_agent_id": "a1_ingestion",
     "confidence": 0.94,
     "evasion_target": null,
-    "notes": "Authoritative customer_tier for C088"
+    "notes": "Authoritative customer_tier for C088",
+    "embedding_type": "benign"
   },
   {
     "corpus_id": "ben_089",
@@ -1510,7 +1598,8 @@
     "author_agent_id": "a1_ingestion",
     "confidence": 0.945,
     "evasion_target": null,
-    "notes": "Authoritative customer_tier for C089"
+    "notes": "Authoritative customer_tier for C089",
+    "embedding_type": "benign"
   },
   {
     "corpus_id": "ben_090",
@@ -1527,7 +1616,8 @@
     "author_agent_id": "a1_ingestion",
     "confidence": 0.9,
     "evasion_target": null,
-    "notes": "Authoritative customer_tier for C090"
+    "notes": "Authoritative customer_tier for C090",
+    "embedding_type": "benign"
   },
   {
     "corpus_id": "ben_091",
@@ -1544,7 +1634,8 @@
     "author_agent_id": "a1_ingestion",
     "confidence": 0.905,
     "evasion_target": null,
-    "notes": "Authoritative customer_tier for C091"
+    "notes": "Authoritative customer_tier for C091",
+    "embedding_type": "benign"
   },
   {
     "corpus_id": "ben_092",
@@ -1561,7 +1652,8 @@
     "author_agent_id": "a1_ingestion",
     "confidence": 0.91,
     "evasion_target": null,
-    "notes": "Authoritative customer_tier for C092"
+    "notes": "Authoritative customer_tier for C092",
+    "embedding_type": "benign"
   },
   {
     "corpus_id": "ben_093",
@@ -1578,7 +1670,8 @@
     "author_agent_id": "a1_ingestion",
     "confidence": 0.915,
     "evasion_target": null,
-    "notes": "Authoritative customer_tier for C093"
+    "notes": "Authoritative customer_tier for C093",
+    "embedding_type": "benign"
   },
   {
     "corpus_id": "ben_094",
@@ -1595,7 +1688,8 @@
     "author_agent_id": "a1_ingestion",
     "confidence": 0.92,
     "evasion_target": null,
-    "notes": "Authoritative customer_tier for C094"
+    "notes": "Authoritative customer_tier for C094",
+    "embedding_type": "benign"
   },
   {
     "corpus_id": "ben_095",
@@ -1612,7 +1706,8 @@
     "author_agent_id": "a1_ingestion",
     "confidence": 0.925,
     "evasion_target": null,
-    "notes": "Authoritative customer_tier for C095"
+    "notes": "Authoritative customer_tier for C095",
+    "embedding_type": "benign"
   },
   {
     "corpus_id": "ben_096",
@@ -1629,7 +1724,8 @@
     "author_agent_id": "a1_ingestion",
     "confidence": 0.93,
     "evasion_target": null,
-    "notes": "Authoritative customer_tier for C096"
+    "notes": "Authoritative customer_tier for C096",
+    "embedding_type": "benign"
   },
   {
     "corpus_id": "ben_097",
@@ -1646,7 +1742,8 @@
     "author_agent_id": "a1_ingestion",
     "confidence": 0.935,
     "evasion_target": null,
-    "notes": "Authoritative customer_tier for C097"
+    "notes": "Authoritative customer_tier for C097",
+    "embedding_type": "benign"
   },
   {
     "corpus_id": "ben_098",
@@ -1663,7 +1760,8 @@
     "author_agent_id": "a1_ingestion",
     "confidence": 0.94,
     "evasion_target": null,
-    "notes": "Authoritative customer_tier for C098"
+    "notes": "Authoritative customer_tier for C098",
+    "embedding_type": "benign"
   },
   {
     "corpus_id": "ben_099",
@@ -1680,7 +1778,8 @@
     "author_agent_id": "a1_ingestion",
     "confidence": 0.945,
     "evasion_target": null,
-    "notes": "Authoritative customer_tier for C099"
+    "notes": "Authoritative customer_tier for C099",
+    "embedding_type": "benign"
   },
   {
     "corpus_id": "ben_100",
@@ -1697,7 +1796,8 @@
     "author_agent_id": "a1_ingestion",
     "confidence": 0.9,
     "evasion_target": null,
-    "notes": "Authoritative customer_tier for C100"
+    "notes": "Authoritative customer_tier for C100",
+    "embedding_type": "benign"
   },
   {
     "corpus_id": "ben_101",
@@ -1714,7 +1814,8 @@
     "author_agent_id": "a1_ingestion",
     "confidence": 0.855,
     "evasion_target": null,
-    "notes": "Authoritative preferred_carrier for C001"
+    "notes": "Authoritative preferred_carrier for C001",
+    "embedding_type": "benign"
   },
   {
     "corpus_id": "ben_102",
@@ -1731,7 +1832,8 @@
     "author_agent_id": "a1_ingestion",
     "confidence": 0.86,
     "evasion_target": null,
-    "notes": "Authoritative preferred_carrier for C002"
+    "notes": "Authoritative preferred_carrier for C002",
+    "embedding_type": "benign"
   },
   {
     "corpus_id": "ben_103",
@@ -1748,7 +1850,8 @@
     "author_agent_id": "a1_ingestion",
     "confidence": 0.865,
     "evasion_target": null,
-    "notes": "Authoritative preferred_carrier for C003"
+    "notes": "Authoritative preferred_carrier for C003",
+    "embedding_type": "benign"
   },
   {
     "corpus_id": "ben_104",
@@ -1765,7 +1868,8 @@
     "author_agent_id": "a1_ingestion",
     "confidence": 0.87,
     "evasion_target": null,
-    "notes": "Authoritative preferred_carrier for C004"
+    "notes": "Authoritative preferred_carrier for C004",
+    "embedding_type": "benign"
   },
   {
     "corpus_id": "ben_105",
@@ -1782,7 +1886,8 @@
     "author_agent_id": "a1_ingestion",
     "confidence": 0.875,
     "evasion_target": null,
-    "notes": "Authoritative preferred_carrier for C005"
+    "notes": "Authoritative preferred_carrier for C005",
+    "embedding_type": "benign"
   },
   {
     "corpus_id": "ben_106",
@@ -1799,7 +1904,8 @@
     "author_agent_id": "a1_ingestion",
     "confidence": 0.88,
     "evasion_target": null,
-    "notes": "Authoritative preferred_carrier for C006"
+    "notes": "Authoritative preferred_carrier for C006",
+    "embedding_type": "benign"
   },
   {
     "corpus_id": "ben_107",
@@ -1816,7 +1922,8 @@
     "author_agent_id": "a1_ingestion",
     "confidence": 0.885,
     "evasion_target": null,
-    "notes": "Authoritative preferred_carrier for C007"
+    "notes": "Authoritative preferred_carrier for C007",
+    "embedding_type": "benign"
   },
   {
     "corpus_id": "ben_108",
@@ -1833,7 +1940,8 @@
     "author_agent_id": "a1_ingestion",
     "confidence": 0.89,
     "evasion_target": null,
-    "notes": "Authoritative preferred_carrier for C008"
+    "notes": "Authoritative preferred_carrier for C008",
+    "embedding_type": "benign"
   },
   {
     "corpus_id": "ben_109",
@@ -1850,7 +1958,8 @@
     "author_agent_id": "a1_ingestion",
     "confidence": 0.895,
     "evasion_target": null,
-    "notes": "Authoritative preferred_carrier for C009"
+    "notes": "Authoritative preferred_carrier for C009",
+    "embedding_type": "benign"
   },
   {
     "corpus_id": "ben_110",
@@ -1867,7 +1976,8 @@
     "author_agent_id": "a1_ingestion",
     "confidence": 0.85,
     "evasion_target": null,
-    "notes": "Authoritative preferred_carrier for C010"
+    "notes": "Authoritative preferred_carrier for C010",
+    "embedding_type": "benign"
   },
   {
     "corpus_id": "ben_111",
@@ -1884,7 +1994,8 @@
     "author_agent_id": "a1_ingestion",
     "confidence": 0.855,
     "evasion_target": null,
-    "notes": "Authoritative preferred_carrier for C011"
+    "notes": "Authoritative preferred_carrier for C011",
+    "embedding_type": "benign"
   },
   {
     "corpus_id": "ben_112",
@@ -1901,7 +2012,8 @@
     "author_agent_id": "a1_ingestion",
     "confidence": 0.86,
     "evasion_target": null,
-    "notes": "Authoritative preferred_carrier for C012"
+    "notes": "Authoritative preferred_carrier for C012",
+    "embedding_type": "benign"
   },
   {
     "corpus_id": "ben_113",
@@ -1918,7 +2030,8 @@
     "author_agent_id": "a1_ingestion",
     "confidence": 0.865,
     "evasion_target": null,
-    "notes": "Authoritative preferred_carrier for C013"
+    "notes": "Authoritative preferred_carrier for C013",
+    "embedding_type": "benign"
   },
   {
     "corpus_id": "ben_114",
@@ -1935,7 +2048,8 @@
     "author_agent_id": "a1_ingestion",
     "confidence": 0.87,
     "evasion_target": null,
-    "notes": "Authoritative preferred_carrier for C014"
+    "notes": "Authoritative preferred_carrier for C014",
+    "embedding_type": "benign"
   },
   {
     "corpus_id": "ben_115",
@@ -1952,7 +2066,8 @@
     "author_agent_id": "a1_ingestion",
     "confidence": 0.875,
     "evasion_target": null,
-    "notes": "Authoritative preferred_carrier for C015"
+    "notes": "Authoritative preferred_carrier for C015",
+    "embedding_type": "benign"
   },
   {
     "corpus_id": "ben_116",
@@ -1969,7 +2084,8 @@
     "author_agent_id": "a1_ingestion",
     "confidence": 0.88,
     "evasion_target": null,
-    "notes": "Authoritative preferred_carrier for C016"
+    "notes": "Authoritative preferred_carrier for C016",
+    "embedding_type": "benign"
   },
   {
     "corpus_id": "ben_117",
@@ -1986,7 +2102,8 @@
     "author_agent_id": "a1_ingestion",
     "confidence": 0.885,
     "evasion_target": null,
-    "notes": "Authoritative preferred_carrier for C017"
+    "notes": "Authoritative preferred_carrier for C017",
+    "embedding_type": "benign"
   },
   {
     "corpus_id": "ben_118",
@@ -2003,7 +2120,8 @@
     "author_agent_id": "a1_ingestion",
     "confidence": 0.89,
     "evasion_target": null,
-    "notes": "Authoritative preferred_carrier for C018"
+    "notes": "Authoritative preferred_carrier for C018",
+    "embedding_type": "benign"
   },
   {
     "corpus_id": "ben_119",
@@ -2020,7 +2138,8 @@
     "author_agent_id": "a1_ingestion",
     "confidence": 0.895,
     "evasion_target": null,
-    "notes": "Authoritative preferred_carrier for C019"
+    "notes": "Authoritative preferred_carrier for C019",
+    "embedding_type": "benign"
   },
   {
     "corpus_id": "ben_120",
@@ -2037,7 +2156,8 @@
     "author_agent_id": "a1_ingestion",
     "confidence": 0.85,
     "evasion_target": null,
-    "notes": "Authoritative preferred_carrier for C020"
+    "notes": "Authoritative preferred_carrier for C020",
+    "embedding_type": "benign"
   },
   {
     "corpus_id": "ben_121",
@@ -2054,7 +2174,8 @@
     "author_agent_id": "a1_ingestion",
     "confidence": 0.855,
     "evasion_target": null,
-    "notes": "Authoritative preferred_carrier for C021"
+    "notes": "Authoritative preferred_carrier for C021",
+    "embedding_type": "benign"
   },
   {
     "corpus_id": "ben_122",
@@ -2071,7 +2192,8 @@
     "author_agent_id": "a1_ingestion",
     "confidence": 0.86,
     "evasion_target": null,
-    "notes": "Authoritative preferred_carrier for C022"
+    "notes": "Authoritative preferred_carrier for C022",
+    "embedding_type": "benign"
   },
   {
     "corpus_id": "ben_123",
@@ -2088,7 +2210,8 @@
     "author_agent_id": "a1_ingestion",
     "confidence": 0.865,
     "evasion_target": null,
-    "notes": "Authoritative preferred_carrier for C023"
+    "notes": "Authoritative preferred_carrier for C023",
+    "embedding_type": "benign"
   },
   {
     "corpus_id": "ben_124",
@@ -2105,7 +2228,8 @@
     "author_agent_id": "a1_ingestion",
     "confidence": 0.87,
     "evasion_target": null,
-    "notes": "Authoritative preferred_carrier for C024"
+    "notes": "Authoritative preferred_carrier for C024",
+    "embedding_type": "benign"
   },
   {
     "corpus_id": "ben_125",
@@ -2122,7 +2246,8 @@
     "author_agent_id": "a1_ingestion",
     "confidence": 0.875,
     "evasion_target": null,
-    "notes": "Authoritative preferred_carrier for C025"
+    "notes": "Authoritative preferred_carrier for C025",
+    "embedding_type": "benign"
   },
   {
     "corpus_id": "ben_126",
@@ -2139,7 +2264,8 @@
     "author_agent_id": "a1_ingestion",
     "confidence": 0.88,
     "evasion_target": null,
-    "notes": "Authoritative preferred_carrier for C026"
+    "notes": "Authoritative preferred_carrier for C026",
+    "embedding_type": "benign"
   },
   {
     "corpus_id": "ben_127",
@@ -2156,7 +2282,8 @@
     "author_agent_id": "a1_ingestion",
     "confidence": 0.885,
     "evasion_target": null,
-    "notes": "Authoritative preferred_carrier for C027"
+    "notes": "Authoritative preferred_carrier for C027",
+    "embedding_type": "benign"
   },
   {
     "corpus_id": "ben_128",
@@ -2173,7 +2300,8 @@
     "author_agent_id": "a1_ingestion",
     "confidence": 0.89,
     "evasion_target": null,
-    "notes": "Authoritative preferred_carrier for C028"
+    "notes": "Authoritative preferred_carrier for C028",
+    "embedding_type": "benign"
   },
   {
     "corpus_id": "ben_129",
@@ -2190,7 +2318,8 @@
     "author_agent_id": "a1_ingestion",
     "confidence": 0.895,
     "evasion_target": null,
-    "notes": "Authoritative preferred_carrier for C029"
+    "notes": "Authoritative preferred_carrier for C029",
+    "embedding_type": "benign"
   },
   {
     "corpus_id": "ben_130",
@@ -2207,7 +2336,8 @@
     "author_agent_id": "a1_ingestion",
     "confidence": 0.85,
     "evasion_target": null,
-    "notes": "Authoritative preferred_carrier for C030"
+    "notes": "Authoritative preferred_carrier for C030",
+    "embedding_type": "benign"
   },
   {
     "corpus_id": "ben_131",
@@ -2224,7 +2354,8 @@
     "author_agent_id": "a1_ingestion",
     "confidence": 0.855,
     "evasion_target": null,
-    "notes": "Authoritative preferred_carrier for C031"
+    "notes": "Authoritative preferred_carrier for C031",
+    "embedding_type": "benign"
   },
   {
     "corpus_id": "ben_132",
@@ -2241,7 +2372,8 @@
     "author_agent_id": "a1_ingestion",
     "confidence": 0.86,
     "evasion_target": null,
-    "notes": "Authoritative preferred_carrier for C032"
+    "notes": "Authoritative preferred_carrier for C032",
+    "embedding_type": "benign"
   },
   {
     "corpus_id": "ben_133",
@@ -2258,7 +2390,8 @@
     "author_agent_id": "a1_ingestion",
     "confidence": 0.865,
     "evasion_target": null,
-    "notes": "Authoritative preferred_carrier for C033"
+    "notes": "Authoritative preferred_carrier for C033",
+    "embedding_type": "benign"
   },
   {
     "corpus_id": "ben_134",
@@ -2275,7 +2408,8 @@
     "author_agent_id": "a1_ingestion",
     "confidence": 0.87,
     "evasion_target": null,
-    "notes": "Authoritative preferred_carrier for C034"
+    "notes": "Authoritative preferred_carrier for C034",
+    "embedding_type": "benign"
   },
   {
     "corpus_id": "ben_135",
@@ -2292,7 +2426,8 @@
     "author_agent_id": "a1_ingestion",
     "confidence": 0.875,
     "evasion_target": null,
-    "notes": "Authoritative preferred_carrier for C035"
+    "notes": "Authoritative preferred_carrier for C035",
+    "embedding_type": "benign"
   },
   {
     "corpus_id": "ben_136",
@@ -2309,7 +2444,8 @@
     "author_agent_id": "a1_ingestion",
     "confidence": 0.88,
     "evasion_target": null,
-    "notes": "Authoritative preferred_carrier for C036"
+    "notes": "Authoritative preferred_carrier for C036",
+    "embedding_type": "benign"
   },
   {
     "corpus_id": "ben_137",
@@ -2326,7 +2462,8 @@
     "author_agent_id": "a1_ingestion",
     "confidence": 0.885,
     "evasion_target": null,
-    "notes": "Authoritative preferred_carrier for C037"
+    "notes": "Authoritative preferred_carrier for C037",
+    "embedding_type": "benign"
   },
   {
     "corpus_id": "ben_138",
@@ -2343,7 +2480,8 @@
     "author_agent_id": "a1_ingestion",
     "confidence": 0.89,
     "evasion_target": null,
-    "notes": "Authoritative preferred_carrier for C038"
+    "notes": "Authoritative preferred_carrier for C038",
+    "embedding_type": "benign"
   },
   {
     "corpus_id": "ben_139",
@@ -2360,7 +2498,8 @@
     "author_agent_id": "a1_ingestion",
     "confidence": 0.895,
     "evasion_target": null,
-    "notes": "Authoritative preferred_carrier for C039"
+    "notes": "Authoritative preferred_carrier for C039",
+    "embedding_type": "benign"
   },
   {
     "corpus_id": "ben_140",
@@ -2377,7 +2516,8 @@
     "author_agent_id": "a1_ingestion",
     "confidence": 0.85,
     "evasion_target": null,
-    "notes": "Authoritative preferred_carrier for C040"
+    "notes": "Authoritative preferred_carrier for C040",
+    "embedding_type": "benign"
   },
   {
     "corpus_id": "ben_141",
@@ -2394,7 +2534,8 @@
     "author_agent_id": "a1_ingestion",
     "confidence": 0.89,
     "evasion_target": null,
-    "notes": "Corroborated payment_terms for S001"
+    "notes": "Corroborated payment_terms for S001",
+    "embedding_type": "benign"
   },
   {
     "corpus_id": "ben_142",
@@ -2411,7 +2552,8 @@
     "author_agent_id": "a1_ingestion",
     "confidence": 0.9,
     "evasion_target": null,
-    "notes": "Corroborated payment_terms for S002"
+    "notes": "Corroborated payment_terms for S002",
+    "embedding_type": "benign"
   },
   {
     "corpus_id": "ben_143",
@@ -2428,7 +2570,8 @@
     "author_agent_id": "a1_ingestion",
     "confidence": 0.91,
     "evasion_target": null,
-    "notes": "Corroborated payment_terms for S003"
+    "notes": "Corroborated payment_terms for S003",
+    "embedding_type": "benign"
   },
   {
     "corpus_id": "ben_144",
@@ -2445,7 +2588,8 @@
     "author_agent_id": "a1_ingestion",
     "confidence": 0.92,
     "evasion_target": null,
-    "notes": "Corroborated payment_terms for S004"
+    "notes": "Corroborated payment_terms for S004",
+    "embedding_type": "benign"
   },
   {
     "corpus_id": "ben_145",
@@ -2462,7 +2606,8 @@
     "author_agent_id": "a1_ingestion",
     "confidence": 0.88,
     "evasion_target": null,
-    "notes": "Corroborated payment_terms for S005"
+    "notes": "Corroborated payment_terms for S005",
+    "embedding_type": "benign"
   },
   {
     "corpus_id": "ben_146",
@@ -2479,7 +2624,8 @@
     "author_agent_id": "a1_ingestion",
     "confidence": 0.89,
     "evasion_target": null,
-    "notes": "Corroborated payment_terms for S006"
+    "notes": "Corroborated payment_terms for S006",
+    "embedding_type": "benign"
   },
   {
     "corpus_id": "ben_147",
@@ -2496,7 +2642,8 @@
     "author_agent_id": "a1_ingestion",
     "confidence": 0.9,
     "evasion_target": null,
-    "notes": "Corroborated payment_terms for S007"
+    "notes": "Corroborated payment_terms for S007",
+    "embedding_type": "benign"
   },
   {
     "corpus_id": "ben_148",
@@ -2513,7 +2660,8 @@
     "author_agent_id": "a1_ingestion",
     "confidence": 0.91,
     "evasion_target": null,
-    "notes": "Corroborated payment_terms for S008"
+    "notes": "Corroborated payment_terms for S008",
+    "embedding_type": "benign"
   },
   {
     "corpus_id": "ben_149",
@@ -2530,7 +2678,8 @@
     "author_agent_id": "a1_ingestion",
     "confidence": 0.92,
     "evasion_target": null,
-    "notes": "Corroborated payment_terms for S009"
+    "notes": "Corroborated payment_terms for S009",
+    "embedding_type": "benign"
   },
   {
     "corpus_id": "ben_150",
@@ -2547,7 +2696,8 @@
     "author_agent_id": "a1_ingestion",
     "confidence": 0.88,
     "evasion_target": null,
-    "notes": "Corroborated payment_terms for S010"
+    "notes": "Corroborated payment_terms for S010",
+    "embedding_type": "benign"
   },
   {
     "corpus_id": "ben_151",
@@ -2564,7 +2714,8 @@
     "author_agent_id": "a1_ingestion",
     "confidence": 0.89,
     "evasion_target": null,
-    "notes": "Corroborated payment_terms for S011"
+    "notes": "Corroborated payment_terms for S011",
+    "embedding_type": "benign"
   },
   {
     "corpus_id": "ben_152",
@@ -2581,7 +2732,8 @@
     "author_agent_id": "a1_ingestion",
     "confidence": 0.9,
     "evasion_target": null,
-    "notes": "Corroborated payment_terms for S012"
+    "notes": "Corroborated payment_terms for S012",
+    "embedding_type": "benign"
   },
   {
     "corpus_id": "ben_153",
@@ -2598,7 +2750,8 @@
     "author_agent_id": "a1_ingestion",
     "confidence": 0.91,
     "evasion_target": null,
-    "notes": "Corroborated payment_terms for S013"
+    "notes": "Corroborated payment_terms for S013",
+    "embedding_type": "benign"
   },
   {
     "corpus_id": "ben_154",
@@ -2615,7 +2768,8 @@
     "author_agent_id": "a1_ingestion",
     "confidence": 0.92,
     "evasion_target": null,
-    "notes": "Corroborated payment_terms for S014"
+    "notes": "Corroborated payment_terms for S014",
+    "embedding_type": "benign"
   },
   {
     "corpus_id": "ben_155",
@@ -2632,7 +2786,8 @@
     "author_agent_id": "a1_ingestion",
     "confidence": 0.88,
     "evasion_target": null,
-    "notes": "Corroborated payment_terms for S015"
+    "notes": "Corroborated payment_terms for S015",
+    "embedding_type": "benign"
   },
   {
     "corpus_id": "ben_156",
@@ -2649,7 +2804,8 @@
     "author_agent_id": "a1_ingestion",
     "confidence": 0.89,
     "evasion_target": null,
-    "notes": "Corroborated payment_terms for S016"
+    "notes": "Corroborated payment_terms for S016",
+    "embedding_type": "benign"
   },
   {
     "corpus_id": "ben_157",
@@ -2666,7 +2822,8 @@
     "author_agent_id": "a1_ingestion",
     "confidence": 0.9,
     "evasion_target": null,
-    "notes": "Corroborated payment_terms for S017"
+    "notes": "Corroborated payment_terms for S017",
+    "embedding_type": "benign"
   },
   {
     "corpus_id": "ben_158",
@@ -2683,7 +2840,8 @@
     "author_agent_id": "a1_ingestion",
     "confidence": 0.91,
     "evasion_target": null,
-    "notes": "Corroborated payment_terms for S018"
+    "notes": "Corroborated payment_terms for S018",
+    "embedding_type": "benign"
   },
   {
     "corpus_id": "ben_159",
@@ -2700,7 +2858,8 @@
     "author_agent_id": "a1_ingestion",
     "confidence": 0.92,
     "evasion_target": null,
-    "notes": "Corroborated payment_terms for S019"
+    "notes": "Corroborated payment_terms for S019",
+    "embedding_type": "benign"
   },
   {
     "corpus_id": "ben_160",
@@ -2717,7 +2876,8 @@
     "author_agent_id": "a1_ingestion",
     "confidence": 0.88,
     "evasion_target": null,
-    "notes": "Corroborated payment_terms for S020"
+    "notes": "Corroborated payment_terms for S020",
+    "embedding_type": "benign"
   },
   {
     "corpus_id": "ben_161",
@@ -2734,7 +2894,8 @@
     "author_agent_id": "a1_ingestion",
     "confidence": 0.89,
     "evasion_target": null,
-    "notes": "Corroborated payment_terms for S021"
+    "notes": "Corroborated payment_terms for S021",
+    "embedding_type": "benign"
   },
   {
     "corpus_id": "ben_162",
@@ -2751,7 +2912,8 @@
     "author_agent_id": "a1_ingestion",
     "confidence": 0.9,
     "evasion_target": null,
-    "notes": "Corroborated payment_terms for S022"
+    "notes": "Corroborated payment_terms for S022",
+    "embedding_type": "benign"
   },
   {
     "corpus_id": "ben_163",
@@ -2768,7 +2930,8 @@
     "author_agent_id": "a1_ingestion",
     "confidence": 0.91,
     "evasion_target": null,
-    "notes": "Corroborated payment_terms for S023"
+    "notes": "Corroborated payment_terms for S023",
+    "embedding_type": "benign"
   },
   {
     "corpus_id": "ben_164",
@@ -2785,7 +2948,8 @@
     "author_agent_id": "a1_ingestion",
     "confidence": 0.92,
     "evasion_target": null,
-    "notes": "Corroborated payment_terms for S024"
+    "notes": "Corroborated payment_terms for S024",
+    "embedding_type": "benign"
   },
   {
     "corpus_id": "ben_165",
@@ -2802,7 +2966,8 @@
     "author_agent_id": "a1_ingestion",
     "confidence": 0.88,
     "evasion_target": null,
-    "notes": "Corroborated payment_terms for S025"
+    "notes": "Corroborated payment_terms for S025",
+    "embedding_type": "benign"
   },
   {
     "corpus_id": "ben_166",
@@ -2819,7 +2984,8 @@
     "author_agent_id": "a1_ingestion",
     "confidence": 0.89,
     "evasion_target": null,
-    "notes": "Corroborated payment_terms for S026"
+    "notes": "Corroborated payment_terms for S026",
+    "embedding_type": "benign"
   },
   {
     "corpus_id": "ben_167",
@@ -2836,7 +3002,8 @@
     "author_agent_id": "a1_ingestion",
     "confidence": 0.9,
     "evasion_target": null,
-    "notes": "Corroborated payment_terms for S027"
+    "notes": "Corroborated payment_terms for S027",
+    "embedding_type": "benign"
   },
   {
     "corpus_id": "ben_168",
@@ -2853,7 +3020,8 @@
     "author_agent_id": "a1_ingestion",
     "confidence": 0.91,
     "evasion_target": null,
-    "notes": "Corroborated payment_terms for S028"
+    "notes": "Corroborated payment_terms for S028",
+    "embedding_type": "benign"
   },
   {
     "corpus_id": "ben_169",
@@ -2870,7 +3038,8 @@
     "author_agent_id": "a1_ingestion",
     "confidence": 0.92,
     "evasion_target": null,
-    "notes": "Corroborated payment_terms for S029"
+    "notes": "Corroborated payment_terms for S029",
+    "embedding_type": "benign"
   },
   {
     "corpus_id": "ben_170",
@@ -2887,7 +3056,8 @@
     "author_agent_id": "a1_ingestion",
     "confidence": 0.88,
     "evasion_target": null,
-    "notes": "Corroborated payment_terms for S030"
+    "notes": "Corroborated payment_terms for S030",
+    "embedding_type": "benign"
   },
   {
     "corpus_id": "ben_171",
@@ -2904,7 +3074,8 @@
     "author_agent_id": "a1_ingestion",
     "confidence": 0.93,
     "evasion_target": null,
-    "notes": "Authoritative account_status for P001"
+    "notes": "Authoritative account_status for P001",
+    "embedding_type": "benign"
   },
   {
     "corpus_id": "ben_172",
@@ -2921,7 +3092,8 @@
     "author_agent_id": "a1_ingestion",
     "confidence": 0.94,
     "evasion_target": null,
-    "notes": "Authoritative account_status for P002"
+    "notes": "Authoritative account_status for P002",
+    "embedding_type": "benign"
   },
   {
     "corpus_id": "ben_173",
@@ -2938,7 +3110,8 @@
     "author_agent_id": "a1_ingestion",
     "confidence": 0.95,
     "evasion_target": null,
-    "notes": "Authoritative account_status for P003"
+    "notes": "Authoritative account_status for P003",
+    "embedding_type": "benign"
   },
   {
     "corpus_id": "ben_174",
@@ -2955,7 +3128,8 @@
     "author_agent_id": "a1_ingestion",
     "confidence": 0.96,
     "evasion_target": null,
-    "notes": "Authoritative account_status for P004"
+    "notes": "Authoritative account_status for P004",
+    "embedding_type": "benign"
   },
   {
     "corpus_id": "ben_175",
@@ -2972,7 +3146,8 @@
     "author_agent_id": "a1_ingestion",
     "confidence": 0.92,
     "evasion_target": null,
-    "notes": "Authoritative account_status for P005"
+    "notes": "Authoritative account_status for P005",
+    "embedding_type": "benign"
   },
   {
     "corpus_id": "ben_176",
@@ -2989,7 +3164,8 @@
     "author_agent_id": "a1_ingestion",
     "confidence": 0.93,
     "evasion_target": null,
-    "notes": "Authoritative account_status for P006"
+    "notes": "Authoritative account_status for P006",
+    "embedding_type": "benign"
   },
   {
     "corpus_id": "ben_177",
@@ -3006,7 +3182,8 @@
     "author_agent_id": "a1_ingestion",
     "confidence": 0.94,
     "evasion_target": null,
-    "notes": "Authoritative account_status for P007"
+    "notes": "Authoritative account_status for P007",
+    "embedding_type": "benign"
   },
   {
     "corpus_id": "ben_178",
@@ -3023,7 +3200,8 @@
     "author_agent_id": "a1_ingestion",
     "confidence": 0.95,
     "evasion_target": null,
-    "notes": "Authoritative account_status for P008"
+    "notes": "Authoritative account_status for P008",
+    "embedding_type": "benign"
   },
   {
     "corpus_id": "ben_179",
@@ -3040,7 +3218,8 @@
     "author_agent_id": "a1_ingestion",
     "confidence": 0.96,
     "evasion_target": null,
-    "notes": "Authoritative account_status for P009"
+    "notes": "Authoritative account_status for P009",
+    "embedding_type": "benign"
   },
   {
     "corpus_id": "ben_180",
@@ -3057,7 +3236,8 @@
     "author_agent_id": "a1_ingestion",
     "confidence": 0.92,
     "evasion_target": null,
-    "notes": "Authoritative account_status for P010"
+    "notes": "Authoritative account_status for P010",
+    "embedding_type": "benign"
   },
   {
     "corpus_id": "ben_181",
@@ -3074,7 +3254,8 @@
     "author_agent_id": "a1_ingestion",
     "confidence": 0.93,
     "evasion_target": null,
-    "notes": "Authoritative account_status for P011"
+    "notes": "Authoritative account_status for P011",
+    "embedding_type": "benign"
   },
   {
     "corpus_id": "ben_182",
@@ -3091,7 +3272,8 @@
     "author_agent_id": "a1_ingestion",
     "confidence": 0.94,
     "evasion_target": null,
-    "notes": "Authoritative account_status for P012"
+    "notes": "Authoritative account_status for P012",
+    "embedding_type": "benign"
   },
   {
     "corpus_id": "ben_183",
@@ -3108,7 +3290,8 @@
     "author_agent_id": "a1_ingestion",
     "confidence": 0.95,
     "evasion_target": null,
-    "notes": "Authoritative account_status for P013"
+    "notes": "Authoritative account_status for P013",
+    "embedding_type": "benign"
   },
   {
     "corpus_id": "ben_184",
@@ -3125,7 +3308,8 @@
     "author_agent_id": "a1_ingestion",
     "confidence": 0.96,
     "evasion_target": null,
-    "notes": "Authoritative account_status for P014"
+    "notes": "Authoritative account_status for P014",
+    "embedding_type": "benign"
   },
   {
     "corpus_id": "ben_185",
@@ -3142,7 +3326,8 @@
     "author_agent_id": "a1_ingestion",
     "confidence": 0.92,
     "evasion_target": null,
-    "notes": "Authoritative account_status for P015"
+    "notes": "Authoritative account_status for P015",
+    "embedding_type": "benign"
   },
   {
     "corpus_id": "ben_186",
@@ -3159,7 +3344,8 @@
     "author_agent_id": "a1_ingestion",
     "confidence": 0.93,
     "evasion_target": null,
-    "notes": "Authoritative account_status for P016"
+    "notes": "Authoritative account_status for P016",
+    "embedding_type": "benign"
   },
   {
     "corpus_id": "ben_187",
@@ -3176,7 +3362,8 @@
     "author_agent_id": "a1_ingestion",
     "confidence": 0.94,
     "evasion_target": null,
-    "notes": "Authoritative account_status for P017"
+    "notes": "Authoritative account_status for P017",
+    "embedding_type": "benign"
   },
   {
     "corpus_id": "ben_188",
@@ -3193,7 +3380,8 @@
     "author_agent_id": "a1_ingestion",
     "confidence": 0.95,
     "evasion_target": null,
-    "notes": "Authoritative account_status for P018"
+    "notes": "Authoritative account_status for P018",
+    "embedding_type": "benign"
   },
   {
     "corpus_id": "ben_189",
@@ -3210,7 +3398,8 @@
     "author_agent_id": "a1_ingestion",
     "confidence": 0.96,
     "evasion_target": null,
-    "notes": "Authoritative account_status for P019"
+    "notes": "Authoritative account_status for P019",
+    "embedding_type": "benign"
   },
   {
     "corpus_id": "ben_190",
@@ -3227,7 +3416,8 @@
     "author_agent_id": "a1_ingestion",
     "confidence": 0.92,
     "evasion_target": null,
-    "notes": "Authoritative account_status for P020"
+    "notes": "Authoritative account_status for P020",
+    "embedding_type": "benign"
   },
   {
     "corpus_id": "ben_191",
@@ -3244,7 +3434,8 @@
     "author_agent_id": "a3_correction",
     "confidence": 0.99,
     "evasion_target": null,
-    "notes": "Explicit correction #1: higher-confidence update for C001/customer_tier"
+    "notes": "Explicit correction #1: higher-confidence update for C001/customer_tier",
+    "embedding_type": "benign"
   },
   {
     "corpus_id": "ben_192",
@@ -3261,7 +3452,8 @@
     "author_agent_id": "a3_correction",
     "confidence": 0.99,
     "evasion_target": null,
-    "notes": "Explicit correction #2: higher-confidence update for C002/customer_tier"
+    "notes": "Explicit correction #2: higher-confidence update for C002/customer_tier",
+    "embedding_type": "benign"
   },
   {
     "corpus_id": "ben_193",
@@ -3278,7 +3470,8 @@
     "author_agent_id": "a3_correction",
     "confidence": 0.99,
     "evasion_target": null,
-    "notes": "Explicit correction #3: higher-confidence update for C003/customer_tier"
+    "notes": "Explicit correction #3: higher-confidence update for C003/customer_tier",
+    "embedding_type": "benign"
   },
   {
     "corpus_id": "ben_194",
@@ -3295,7 +3488,8 @@
     "author_agent_id": "a3_correction",
     "confidence": 0.99,
     "evasion_target": null,
-    "notes": "Explicit correction #4: higher-confidence update for C004/customer_tier"
+    "notes": "Explicit correction #4: higher-confidence update for C004/customer_tier",
+    "embedding_type": "benign"
   },
   {
     "corpus_id": "ben_195",
@@ -3312,7 +3506,8 @@
     "author_agent_id": "a3_correction",
     "confidence": 0.99,
     "evasion_target": null,
-    "notes": "Explicit correction #5: higher-confidence update for C005/preferred_carrier"
+    "notes": "Explicit correction #5: higher-confidence update for C005/preferred_carrier",
+    "embedding_type": "benign"
   },
   {
     "corpus_id": "ben_196",
@@ -3329,7 +3524,8 @@
     "author_agent_id": "a3_correction",
     "confidence": 0.99,
     "evasion_target": null,
-    "notes": "Explicit correction #6: higher-confidence update for C006/preferred_carrier"
+    "notes": "Explicit correction #6: higher-confidence update for C006/preferred_carrier",
+    "embedding_type": "benign"
   },
   {
     "corpus_id": "ben_197",
@@ -3346,7 +3542,8 @@
     "author_agent_id": "a3_correction",
     "confidence": 0.99,
     "evasion_target": null,
-    "notes": "Explicit correction #7: higher-confidence update for S001/payment_terms"
+    "notes": "Explicit correction #7: higher-confidence update for S001/payment_terms",
+    "embedding_type": "benign"
   },
   {
     "corpus_id": "ben_198",
@@ -3363,7 +3560,8 @@
     "author_agent_id": "a3_correction",
     "confidence": 0.99,
     "evasion_target": null,
-    "notes": "Explicit correction #8: higher-confidence update for S002/payment_terms"
+    "notes": "Explicit correction #8: higher-confidence update for S002/payment_terms",
+    "embedding_type": "benign"
   },
   {
     "corpus_id": "ben_199",
@@ -3380,7 +3578,8 @@
     "author_agent_id": "a3_correction",
     "confidence": 0.99,
     "evasion_target": null,
-    "notes": "Explicit correction #9: higher-confidence update for P001/account_status"
+    "notes": "Explicit correction #9: higher-confidence update for P001/account_status",
+    "embedding_type": "benign"
   },
   {
     "corpus_id": "ben_200",
@@ -3397,6 +3596,7 @@
     "author_agent_id": "a3_correction",
     "confidence": 0.99,
     "evasion_target": null,
-    "notes": "Explicit correction #10: higher-confidence update for P002/account_status"
+    "notes": "Explicit correction #10: higher-confidence update for P002/account_status",
+    "embedding_type": "benign"
   }
 ]

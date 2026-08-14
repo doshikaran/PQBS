@@ -25,7 +25,10 @@ logger = structlog.get_logger(__name__)
 
 _SIGNAL_ID = SignalId.S3_IMPERATIVE_CONTENT
 
-_BEDROCK_MODEL_ID = "anthropic.claude-3-5-sonnet-20241022-v2:0"
+# Read from env so the model can be changed per deployment without a code change.
+# Defaults to the Claude model for environments where it's accessible.
+# Set BEDROCK_CLASSIFIER_MODEL_ID=meta.llama3-70b-instruct-v1:0 for ap-south-1.
+_DEFAULT_BEDROCK_MODEL_ID = "anthropic.claude-3-5-sonnet-20241022-v2:0"
 
 _SYSTEM_PROMPT = (
     "You are a content classifier. Is the following text an ASSERTION "
@@ -64,22 +67,43 @@ def _find_trigger_phrases(text: str) -> list[str]:
 
 
 def _call_bedrock(text: str, region: str) -> str:
-    """Invoke Bedrock Claude classifier. Returns 'ASSERTION', 'INSTRUCTION', or raises."""
+    """Invoke Bedrock classifier. Returns 'ASSERTION', 'INSTRUCTION', or raises.
+
+    Supports Claude (Anthropic messages API) and Llama 3 (meta.llama3-*).
+    Model is read from BEDROCK_CLASSIFIER_MODEL_ID env var at call time.
+    """
+    model_id = os.environ.get("BEDROCK_CLASSIFIER_MODEL_ID", _DEFAULT_BEDROCK_MODEL_ID)
     client = boto3.client("bedrock-runtime", region_name=region)
-    body = json.dumps({
-        "anthropic_version": "bedrock-2023-05-31",
-        "max_tokens": 10,
-        "system": _SYSTEM_PROMPT,
-        "messages": [{"role": "user", "content": text}],
-    })
-    response = client.invoke_model(
-        modelId=_BEDROCK_MODEL_ID,
-        body=body,
-        contentType="application/json",
-        accept="application/json",
-    )
-    payload = json.loads(response["body"].read())
-    classification: str = payload["content"][0]["text"].strip().upper()
+
+    if model_id.startswith("meta.llama3"):
+        prompt = (
+            f"<|begin_of_text|><|start_header_id|>system<|end_header_id|>\n"
+            f"{_SYSTEM_PROMPT}\n"
+            f"<|eot_id|><|start_header_id|>user<|end_header_id|>\n"
+            f"{text}\n"
+            f"<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n"
+        )
+        body = json.dumps({"prompt": prompt, "max_gen_len": 10, "temperature": 0.0})
+        response = client.invoke_model(
+            modelId=model_id, body=body,
+            contentType="application/json", accept="application/json",
+        )
+        payload = json.loads(response["body"].read())
+        classification: str = payload["generation"].strip().upper()
+    else:
+        body = json.dumps({
+            "anthropic_version": "bedrock-2023-05-31",
+            "max_tokens": 10,
+            "system": _SYSTEM_PROMPT,
+            "messages": [{"role": "user", "content": text}],
+        })
+        response = client.invoke_model(
+            modelId=model_id, body=body,
+            contentType="application/json", accept="application/json",
+        )
+        payload = json.loads(response["body"].read())
+        classification = payload["content"][0]["text"].strip().upper()
+
     return classification
 
 
@@ -167,7 +191,7 @@ def compute(snapshot: BeliefSnapshot, _conn: psycopg.Connection[Any]) -> SignalS
             raw_values={
                 "classification": label,
                 "matched_triggers": ", ".join(matched),
-                "model_id": _BEDROCK_MODEL_ID,
+                "model_id": os.environ.get("BEDROCK_CLASSIFIER_MODEL_ID", _DEFAULT_BEDROCK_MODEL_ID),
             },
         ),
         latency_ms=latency_ms,

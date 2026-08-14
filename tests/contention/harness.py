@@ -150,9 +150,11 @@ class ContentionHarness:
         """Single writer thread. Retries on SerializationFailure."""
         conn = get_conn()
         try:
+            # CockroachDB uses "read committed" with a space; callers may pass underscore form.
+            iso_value = isolation_level.replace("_", " ")
             conn.execute(
                 pgsql.SQL("SET default_transaction_isolation = {}").format(
-                    pgsql.Literal(isolation_level)
+                    pgsql.Literal(iso_value)
                 )
             )
 

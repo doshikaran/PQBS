@@ -22,6 +22,7 @@ from dotenv import load_dotenv
 load_dotenv(_REPO_ROOT / ".env")
 
 import psycopg
+from psycopg.adapt import Loader
 from psycopg.rows import dict_row
 
 from pqbs.agents.integrity.a15_redteam import RedTeamAgent, _EVAL_TENANT_ID
@@ -29,8 +30,38 @@ from pqbs.agents.integrity.a15_redteam import RedTeamAgent, _EVAL_TENANT_ID
 _DEFAULT_OUT = _REPO_ROOT / "eval" / "results" / "metrics_live.json"
 
 
+class _VectorTextLoader(Loader):
+    """Parse CockroachDB VECTOR '[x,y,…]' into a Python list[float].
+
+    psycopg has no built-in adapter for the VECTOR type, so SELECT embedding
+    returns raw bytes / memoryview.  S1 (and any other signal that reads
+    embeddings) requires a float sequence.  Registering this loader at
+    connection time fixes deserialization for all signals without touching
+    E2's code.
+    """
+
+    def load(self, data: bytes | memoryview) -> list[float]:
+        if isinstance(data, memoryview):
+            text = bytes(data).decode("utf-8")
+        elif isinstance(data, bytes):
+            text = data.decode("utf-8")
+        else:
+            text = str(data)
+        return [float(x) for x in text.strip("[]").split(",")]
+
+
 def _get_conn(url: str) -> psycopg.Connection:
-    return psycopg.connect(url, autocommit=False, row_factory=dict_row)  # type: ignore[call-overload]
+    conn = psycopg.connect(url, autocommit=False, row_factory=dict_row)  # type: ignore[call-overload]
+    # Register the VECTOR type loader — query OID at runtime.
+    try:
+        row = conn.execute(
+            "SELECT oid FROM pg_type WHERE typname = 'vector'"
+        ).fetchone()
+        if row:
+            conn.adapters.register_loader(int(row["oid"]), _VectorTextLoader)
+    except Exception:
+        pass  # If registration fails, S1 will use its own fallback
+    return conn
 
 
 def main() -> None:

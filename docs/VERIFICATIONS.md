@@ -1,3 +1,86 @@
+## Phase 8 — Evaluation
+
+**Completed:** 2026-08-14
+**Cluster:** higher-panther-31862.j77.aws-ap-south-1.cockroachlabs.cloud (CockroachDB v26.2.5)
+**Eval tenant:** eeee0000-0000-0000-0000-000000000003
+
+### Red-Team Evaluation (§25.1 — Detection Metrics)
+
+**Runner:** `python eval/runner.py` against live CockroachDB
+**Corpus:** 200 benign + 100 poison (T1×20, T2×20, T3×20, T4×20, T8×20) + 50 evasion
+**Bedrock classifier:** meta.llama3-70b-instruct-v1:0 (ap-south-1; Claude on-demand unavailable)
+
+| Metric | Value | Notes |
+|--------|-------|-------|
+| detection_rate_overall | 0.200 | T8=1.00; T1-T4=0.00 (see limitations) |
+| detection_rate_T8 | 1.000 | 20/20 imperative-content entries quarantined |
+| detection_rate_T1-T4 | 0.000 | Score ~0.535, below 0.70 threshold without S3 weight |
+| false_positive_rate | 0.000 | 200/200 benign correctly trusted |
+| evasion_resistance | 0.200 | Multi-signal redundancy catches some evaders |
+| cascade_completeness | 1.000 | Structural guarantee |
+| time_to_quarantine_p50 | 450.2 ms | Includes ~300ms Bedrock Llama round-trip |
+| time_to_quarantine_p99 | 882.8 ms | |
+| contradiction_correctness | 1.000 | Structural guarantee |
+
+**Full report:** `eval/results/metrics_live.json` (includes `known_limitations` field)
+
+**Root cause of 0% detection for T1-T4:** Without the S3 imperative signal (weight=0.25), the remaining signals (S1=0.20, S2=0.20, S4=0.10) reach a combined score of ~0.535 — below the quarantine threshold of 0.70. These classes have factual-looking objects with no trigger phrases; S3 correctly classifies them as ASSERTION and scores 0.0.
+
+### Contention Comparison (§25.3 — SERIALIZABLE vs READ COMMITTED)
+
+**Runner:** `python -m tests.contention.compare --writers 8 --subject C997 --predicate customer_tier`
+**Live against CockroachDB SERIALIZABLE cluster**
+
+| Isolation | trusted_count | chain_is_total_order | passed | wall_time_ms |
+|-----------|--------------|---------------------|--------|-------------|
+| SERIALIZABLE | 1 | true | PASS | 666.6 |
+| READ COMMITTED | 1 | true | PASS | 579.4 |
+
+**Finding:** CockroachDB v26.2 RC uses pessimistic write locks even under READ COMMITTED, preventing the classic lost-update fork anomaly on the write path. Both isolations produce 1 trusted belief with 8 concurrent writers.
+
+**Why SERIALIZABLE is still required:** (1) Snapshot consistency for read-heavy signals (S1 cluster-mean sees a consistent snapshot — RC allows phantom reads); (2) Explicit 40001 serialization errors force proper retry handling (RC produces 0 conflict errors, relying instead on internal locking); (3) Security invariant 4 mandates SERIALIZABLE — changing this requires an explicit architectural decision.
+
+**Full report:** `eval/results/contention.json`
+
+### Role Isolation with Real DB Login (Part 1 Item 4)
+
+**User created:** `role_consumer_test` with `GRANT role_consumer TO role_consumer_test`
+
+| Test | Expected | Result |
+|------|----------|--------|
+| Direct `SELECT FROM belief` | AccessDenied | PASS — InsufficientPrivilege |
+| Direct `SELECT FROM belief WHERE status='quarantined'` | AccessDenied | PASS — InsufficientPrivilege |
+| `SELECT FROM v_trusted_current` | Allowed, trusted only | PASS — 5 rows, all from trusted view |
+| `SELECT FROM v_pending_beliefs` | AccessDenied | PASS — InsufficientPrivilege |
+
+**Enforcement mechanism:** DB-level GRANT (not RLS); role_consumer has no privilege on `belief` table; only SELECT on `v_trusted_current`. Quarantined/pending beliefs structurally inaccessible at DB layer.
+
+### Fail-Closed Verification (Part 1 Item 3)
+
+**Method:** Wrote a belief directly with status='pending' (bypassing screening gate, simulating worker down). Connected as role_consumer_test.
+
+- **Pending belief written:** `47bea3a0-f826-45d0-bda5-fbe639234bfe` (subject=FAILCLOSED_TEST_001)
+- **role_consumer sees:** 0 rows from v_trusted_current for that subject
+- **Admin confirms:** belief exists with status=pending
+
+**Structural guarantee:** v_trusted_current is defined as `WHERE status = 'trusted'`. Pending beliefs cannot appear in any consumer-accessible path until the screening gate processes and verdicts them as trusted.
+
+### WORM Enforcement (Part 1 Item 2)
+
+**Status:** CONFIRMED with noted limitation
+
+| Check | Status | Evidence |
+|-------|--------|---------|
+| S3 versioning enabled | CONFIRMED | PutObject returns VersionId |
+| DeleteObject blocked | CONFIRMED | AccessDenied — explicit deny in pqbs-app-runtime-policy |
+| Object Lock configuration readable | NOT VERIFIABLE | pqbs-app lacks s3:GetBucketObjectLockConfiguration |
+
+**Documented in Phase 5:** "WORM bucket: S3 ObjectLock COMPLIANCE mode, 365-day retention configured" (set at bucket creation). The current IAM policy intentionally restricts read of the lock configuration to prevent probe-and-evade patterns. Operative protection (delete blocked) is confirmed.
+
+**Limitation:** We cannot programmatically verify the Object Lock mode/period from the application IAM user. To verify, access the S3 console under AWS account 505284748450 or add s3:GetBucketObjectLockConfiguration to the policy temporarily.
+
+---
+
 ## Phase 7 — Depth: Drift Detection, Observability, Failure-Mode Tests, React UI
 
 **Completed:** 2026-08-13
