@@ -30,6 +30,8 @@ def upgrade() -> None:
     # v_trusted_current — the ONLY view role_consumer can access.
     # Enforces Security Invariant #2: no consumer-role query can return
     # quarantined or pending beliefs.
+    # embedding is included so the recall path can ORDER BY embedding <-> qvec
+    # after the two-phase CTE narrows candidates via idx_belief_vector.
     connection.execute(text("""
         CREATE VIEW IF NOT EXISTS v_trusted_current AS
         SELECT
@@ -47,7 +49,8 @@ def upgrade() -> None:
             provenance_id,
             trust_score,
             screened_at,
-            sensitivity
+            sensitivity,
+            embedding
         FROM belief
         WHERE status = 'trusted' AND tx_to IS NULL
     """))

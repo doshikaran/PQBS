@@ -169,7 +169,7 @@ class CorpusLoader:
 
     def __init__(self, corpus_dir: Path | None = None) -> None:
         if corpus_dir is None:
-            corpus_dir = Path(__file__).parents[5] / "eval" / "corpus"
+            corpus_dir = Path(__file__).parents[4] / "eval" / "corpus"
         self._corpus_dir = corpus_dir
 
     def load_all(self) -> list[CorpusEntry]:

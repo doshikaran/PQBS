@@ -63,7 +63,20 @@ class RecallEngine:
         embedding = embed_text(request.query, region=region)
         vector_str = "[" + ",".join(str(x) for x in embedding) + "]"
 
-        # Step 3 — vector search with mandatory filters
+        # Step 3 — two-phase vector search.
+        #
+        # Phase 1 uses the CSPANN vector index (belief@idx_belief_vector) to get
+        # the top-k*10 nearest candidates by embedding distance.  The index hint
+        # is required: CockroachDB's optimizer will not choose the vector index
+        # autonomously when the query also filters on status (which is not in the
+        # index prefix).
+        #
+        # Phase 2 joins those candidates to v_trusted_current, which enforces the
+        # role-scoped security constraint (status='trusted', tx_to IS NULL) and
+        # applies the optional temporal and trust-score predicates.
+        #
+        # This keeps security enforcement in the view while still getting the index
+        # path from the planner.
         min_score: float | None = (
             request.min_trust_score if request.min_trust_score > 0.0 else None
         )
@@ -72,8 +85,19 @@ class RecallEngine:
         has_valid_at = temporal_ctx.valid_at is not None
         has_known_at = temporal_ctx.known_at is not None
 
+        # Oversample in phase 1: fetch 10x candidates so filtering in phase 2
+        # has enough to fill the final limit after trust/temporal cuts.
+        knn_limit = request.limit * 10
+
         sql_parts = [
             """
+WITH knn AS MATERIALIZED (
+    SELECT belief_id
+    FROM belief@idx_belief_vector
+    WHERE tenant_id = %s
+    ORDER BY embedding <-> %s::vector
+    LIMIT %s
+)
 SELECT
     b.belief_id,
     b.tenant_id,
@@ -91,10 +115,14 @@ SELECT
     b.screened_at
 FROM v_trusted_current b
 WHERE b.tenant_id = %s
+  AND b.belief_id IN (SELECT belief_id FROM knn)
   AND (%s::float IS NULL OR b.trust_score >= %s)
 """,
         ]
         params: list[Any] = [
+            str(request.tenant_id),
+            vector_str,
+            knn_limit,
             str(request.tenant_id),
             min_score,
             min_score,

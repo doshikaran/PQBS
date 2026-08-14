@@ -1,0 +1,54 @@
+{
+  "measured_at": "2026-08-14T00:00:00Z",
+  "cluster": "higher-panther-31862.j77.aws-ap-south-1.cockroachlabs.cloud",
+  "region": "ap-south-1",
+  "notes": "All measurements against live CockroachDB serverless. Signal compute mocked for screening gate (isolates DB round-trip from Bedrock latency). Recall path uses two-phase CTE with idx_belief_vector (no Bedrock embedding).",
+  "write_path": {
+    "description": "INSERT provenance + INSERT belief (pending) + COMMIT",
+    "n": 20,
+    "p50_ms": 33.9,
+    "p99_ms": 55.5,
+    "unit": "ms"
+  },
+  "recall_path": {
+    "description": "KNN via belief@idx_belief_vector CTE + v_trusted_current join + LIMIT 5, no Bedrock",
+    "n": 20,
+    "p50_ms": 22.3,
+    "p99_ms": 78.4,
+    "unit": "ms"
+  },
+  "screening_gate": {
+    "description": "ScreeningGate.screen() with 8 signals mocked (score=0.2 each), live verdict INSERT + COMMIT",
+    "n": 10,
+    "p50_ms": 26.3,
+    "p99_ms": 53.6,
+    "unit": "ms",
+    "verdict": "trusted",
+    "trust_score": 0.2
+  },
+  "vector_index": {
+    "status": "CONFIRMED",
+    "index_name": "idx_belief_vector",
+    "index_type": "CSPANN (CockroachDB vector index)",
+    "query_plan_node": "vector search",
+    "fix_applied": "Two-phase CTE with belief@idx_belief_vector hint; outer SELECT via v_trusted_current",
+    "beliefs_with_embeddings": 20,
+    "explain_confirms_vector_search": true
+  },
+  "serializable_contention": {
+    "status": "CONFIRMED_PASS",
+    "trials": 5,
+    "n_writers_per_trial": 8,
+    "all_trusted_count_1": true,
+    "total_40001_errors": 181,
+    "wall_time_range_ms": "2857-5131"
+  },
+  "worm_enforcement": {
+    "status": "CONFIRMED",
+    "delete_blocked": true,
+    "iam_policy": "arn:aws:iam::505284748450:policy/pqbs-app-runtime-policy",
+    "error_code": "AccessDenied",
+    "object_lock_config_verifiable": false,
+    "note": "IAM user lacks s3:GetBucketObjectLockConfiguration; operative protection (delete blocked) confirmed"
+  }
+}

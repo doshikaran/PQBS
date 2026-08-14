@@ -121,9 +121,20 @@ def test_recall_queries_trusted_current_view() -> None:
     assert "v_trusted_current" in main_select, (
         f"Expected v_trusted_current in SQL, got: {main_select[:200]}"
     )
-    assert "FROM belief" not in main_select.replace("v_trusted_current", ""), (
-        "SQL must not query 'belief' table directly"
-    )
+    # The CTE phase is allowed to query belief@idx_belief_vector (vector index path)
+    # for candidate belief_ids only. The main outer SELECT must go through
+    # v_trusted_current for security enforcement. We verify that the part of the
+    # SQL after the CTE (the outer SELECT) does not query belief directly.
+    if "WITH knn" in main_select:
+        # Find the outer SELECT — everything after the closing paren of the CTE
+        outer_select = main_select.split(")\nSELECT", 1)[-1] if ")\nSELECT" in main_select else main_select
+        assert "FROM belief" not in outer_select.replace("v_trusted_current", ""), (
+            "Outer SELECT must not query 'belief' table directly — must use v_trusted_current"
+        )
+    else:
+        assert "FROM belief" not in main_select.replace("v_trusted_current", ""), (
+            "SQL must not query 'belief' table directly"
+        )
 
 
 # ---------------------------------------------------------------------------
