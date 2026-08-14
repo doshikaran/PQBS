@@ -266,7 +266,9 @@ class TestS3ImperativeContent:
             "content": [{"text": "INSTRUCTION"}]
         }
 
-        with patch("boto3.client") as mock_boto:
+        # Pin to Claude model so the test is independent of BEDROCK_CLASSIFIER_MODEL_ID env var.
+        with patch("boto3.client") as mock_boto, \
+             patch.dict("os.environ", {"BEDROCK_CLASSIFIER_MODEL_ID": "anthropic.claude-3-5-sonnet-20241022-v2:0"}):
             mock_client = MagicMock()
             mock_boto.return_value = mock_client
             mock_body = MagicMock()
@@ -290,7 +292,9 @@ class TestS3ImperativeContent:
             "content": [{"text": "ASSERTION"}]
         }
 
-        with patch("boto3.client") as mock_boto:
+        # Pin to Claude model so the test is independent of BEDROCK_CLASSIFIER_MODEL_ID env var.
+        with patch("boto3.client") as mock_boto, \
+             patch.dict("os.environ", {"BEDROCK_CLASSIFIER_MODEL_ID": "anthropic.claude-3-5-sonnet-20241022-v2:0"}):
             mock_client = MagicMock()
             mock_boto.return_value = mock_client
             mock_body = MagicMock()
