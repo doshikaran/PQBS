@@ -15,12 +15,14 @@ import time
 from datetime import datetime, timezone
 from typing import Any
 
+
 import psycopg
 import structlog
 
 from pqbs.contracts.cdc import BeliefSnapshot, ChangeEvent
 from pqbs.contracts.enums import BeliefStatus, CdcOperation, Sensitivity
 from pqbs.integrity.gate import ScreeningGate, SCREENER_VERSION
+from pqbs.telemetry import get_metrics
 
 logger = structlog.get_logger(__name__)
 
@@ -82,15 +84,24 @@ class BeliefPoller:
     gap vs log-driven CDC.
     """
 
+    # Warn when oldest pending belief is older than this threshold.
+    CDC_LAG_WARN_THRESHOLD_S: float = 30.0
+
     def __init__(
         self,
         gate: ScreeningGate,
         poll_interval_seconds: float = 5.0,
         batch_size: int = 100,
+        cdc_lag_warn_threshold_s: float | None = None,
     ) -> None:
         self._gate = gate
         self._poll_interval = poll_interval_seconds
         self._batch_size = batch_size
+        self._lag_threshold_s = (
+            cdc_lag_warn_threshold_s
+            if cdc_lag_warn_threshold_s is not None
+            else self.CDC_LAG_WARN_THRESHOLD_S
+        )
 
     def poll_once(self, conn: psycopg.Connection[Any]) -> int:
         """
@@ -115,6 +126,29 @@ class BeliefPoller:
             """,
             (self._batch_size,),
         ).fetchall()
+
+        # Detect CDC lag from oldest pending belief still unscreened.
+        if rows:
+            oldest_row = rows[0]
+            tx_from = oldest_row.get("tx_from") if hasattr(oldest_row, "get") else getattr(oldest_row, "tx_from", None)
+            if tx_from is not None:
+                now_utc = datetime.now(tz=timezone.utc)
+                if isinstance(tx_from, datetime):
+                    if tx_from.tzinfo is None:
+                        tx_from = tx_from.replace(tzinfo=timezone.utc)
+                    lag_s = (now_utc - tx_from).total_seconds()
+                    lag_ms = lag_s * 1000
+                    try:
+                        get_metrics().record_cdc_lag(lag_ms=lag_ms)
+                    except Exception:
+                        pass
+                    if lag_s > self._lag_threshold_s:
+                        logger.warning(
+                            "poller_cdc_lag_detected",
+                            lag_seconds=round(lag_s, 1),
+                            threshold_seconds=self._lag_threshold_s,
+                            oldest_belief_id=str(oldest_row["belief_id"]),
+                        )
 
         screened_count = 0
         for row in rows:

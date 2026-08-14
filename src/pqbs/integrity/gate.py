@@ -41,6 +41,8 @@ from pqbs.integrity.signals import (
     s8_temporal_plausibility,
 )
 
+from pqbs.telemetry import get_metrics
+
 logger = structlog.get_logger(__name__)
 
 SIGNAL_WEIGHTS: dict[SignalId, float] = {
@@ -356,6 +358,23 @@ class ScreeningGate:
                 trust_score=round(trust_score, 4),
                 latency_ms=total_latency_ms,
             )
+
+        # Record screening lag = time from belief commit to screening completion.
+        # Telemetry is best-effort — never fail-close the gate.
+        try:
+            tx_from = snapshot.tx_from
+            if tx_from is not None:
+                lag_ms = (screened_at - tx_from).total_seconds() * 1000
+            else:
+                lag_ms = float(total_latency_ms)
+            get_metrics().record_screening(
+                lag_ms=lag_ms,
+                verdict=verdict_value.value,
+                trust_score=trust_score,
+                reason_code=triggering_rule,
+            )
+        except Exception:
+            pass
 
         return verdict
 

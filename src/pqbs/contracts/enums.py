@@ -127,5 +127,7 @@ class AuditEventType(str, Enum):
     AGENT_REGISTERED = "agent_registered"
     AGENT_SUSPENDED = "agent_suspended"
     POSTURE_DRIFT_DETECTED = "posture_drift_detected"
+    POSTURE_ATTESTED = "posture_attested"
+    CONTROL_PLANE_AUDIT_INGESTED = "control_plane_audit_ingested"
     TEMPORAL_QUERY = "temporal_query"
     RECALL_EXECUTED = "recall_executed"

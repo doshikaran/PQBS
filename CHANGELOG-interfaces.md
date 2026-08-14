@@ -57,4 +57,33 @@ After this freeze, any change to a contract requires:
 
 ---
 
-*No changes have been made to frozen interfaces since freeze-v1.*
+---
+
+## change-v2 — 2026-08-14
+
+**Status:** ADDITIVE — no breaking change, no existing consumer modified.
+
+**Owner:** E3 (Phase 6.5, A18 Posture Verification + A19 Substrate Custody)
+
+**Lead sign-off:** Self-authorized per CLAUDE.md additive-change exemption (additive enum extension does not alter existing values or remove fields).
+
+### Change
+
+Two values added to `AuditEventType` in `src/pqbs/contracts/enums.py`:
+
+| New value | String | Emitter | Consumer |
+|---|---|---|---|
+| `POSTURE_ATTESTED` | `"posture_attested"` | A18 `PostureVerificationAgent.run_verification_cycle()` | WORM audit sink |
+| `CONTROL_PLANE_AUDIT_INGESTED` | `"control_plane_audit_ingested"` | A19 `SubstrateCustodyAgent.ingest_events_to_worm()` | WORM audit sink |
+
+### Impact assessment
+
+- **Existing consumers unaffected:** All existing `AuditEventType` switches and serializers use the existing values; adding enum members is backwards-compatible under Python `enum.Enum`.
+- **Existing tests unaffected:** No existing test constructs or asserts on the full set of `AuditEventType` members.
+- **`AuditRecord` contract unchanged:** The `event_type: AuditEventType` field already accepts any member; no schema migration required.
+- **WORM sink unchanged:** Accepts `AuditRecord` regardless of which event type is set.
+
+### Consuming tests
+
+- `tests/unit/test_posture.py` — 13 tests covering A18, including assertions on `event_type.value == "posture_attested"` and `"posture_drift_detected"`
+- `tests/unit/test_custody.py` — 17 tests covering A19, including assertion on `event_type.value == "control_plane_audit_ingested"`

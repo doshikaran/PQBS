@@ -152,6 +152,11 @@ class MetricsCollector:
         with self._lock:
             self.integrity.cascade_depths.append(depth)
 
+    def record_cdc_lag(self, lag_ms: float) -> None:
+        """Record observed CDC/polling lag (time from belief commit to screening pickup)."""
+        with self._lock:
+            self.health.cdc_lag_ms.append(lag_ms)
+
     def record_drift_alert(self, detection_type: str, severity: str) -> None:
         """Record a drift alert detection."""
         with self._lock:

@@ -9,9 +9,9 @@ Security Invariant 7: This agent writes beliefs, it never issues verdicts.
 """
 from __future__ import annotations
 
-import hashlib
 import json
 import os
+import time as _time
 from datetime import datetime, timezone
 from typing import Any
 from uuid import UUID, uuid4
@@ -35,6 +35,7 @@ from pqbs.agents.semantics.embed import embed_normalized
 from pqbs.agents.semantics.resolve import resolve
 from pqbs.substrate.retry import with_serializable_retry
 from pqbs.substrate.transaction import begin_serializable, commit, rollback
+from pqbs.telemetry import get_metrics
 
 logger = structlog.get_logger(__name__)
 
@@ -373,12 +374,14 @@ def ingest(
             )
 
             # A7: Resolve inside a serializable transaction with retry
+            write_start = _time.monotonic()
             outcome, retry_count = with_serializable_retry(
                 conn,
                 _resolve_txn,
                 embedded,
                 provenance_record,
             )
+            write_latency_ms = (_time.monotonic() - write_start) * 1000
             # Rebuild outcome with correct retry_count
             outcome = ResolutionOutcome(
                 belief_id=outcome.belief_id,
@@ -392,6 +395,14 @@ def ingest(
                 contradiction_event_id=outcome.contradiction_event_id,
             )
             outcomes.append(outcome)
+
+            try:
+                get_metrics().record_write(
+                    latency_ms=write_latency_ms,
+                    retry_count=retry_count,
+                )
+            except Exception:
+                pass
 
             logger.info(
                 "belief_ingested",

@@ -18,6 +18,7 @@ import structlog
 
 from pqbs.agents.semantics.embed import embed_text
 from pqbs.contracts import RecalledBelief, RecallRequest, RecallResult
+from pqbs.telemetry import get_metrics
 
 logger = structlog.get_logger(__name__)
 
@@ -200,4 +201,10 @@ VALUES (%s, %s, %s, %s, %s, %s)
             returned=len(beliefs),
             latency_ms=elapsed_ms,
         )
+
+        try:
+            get_metrics().record_recall(latency_ms=float(elapsed_ms))
+        except Exception:
+            pass
+
         return result
