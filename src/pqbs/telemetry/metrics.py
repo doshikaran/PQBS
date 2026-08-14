@@ -8,6 +8,7 @@ No external metrics backend required for demo — in-process is sufficient.
 from __future__ import annotations
 
 import threading
+from collections.abc import Sequence
 from dataclasses import dataclass, field
 from typing import Any
 from uuid import UUID
@@ -30,7 +31,7 @@ class HealthMetrics:
     retry_total_attempts: int = 0
     cdc_lag_ms: list[float] = field(default_factory=list)
 
-    def p50(self, values: list[float]) -> float:
+    def p50(self, values: Sequence[float]) -> float:
         if not values:
             return 0.0
         sorted_vals = sorted(values)
@@ -38,7 +39,7 @@ class HealthMetrics:
         idx = min(idx, len(sorted_vals) - 1)
         return sorted_vals[idx]
 
-    def p99(self, values: list[float]) -> float:
+    def p99(self, values: Sequence[float]) -> float:
         if not values:
             return 0.0
         sorted_vals = sorted(values)

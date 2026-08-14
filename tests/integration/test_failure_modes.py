@@ -11,7 +11,6 @@ from __future__ import annotations
 import os
 import stat
 import tempfile
-import threading
 import time
 from datetime import datetime, timezone
 from typing import Any
@@ -91,7 +90,6 @@ def test_retry_exhaustion_raises_explicit_error() -> None:
 def test_canonicalization_ambiguous_yields_elevated_sensitivity() -> None:
     """A boolean-ambiguous object value must produce Sensitivity.ELEVATED."""
     from pqbs.agents.semantics.canonicalize import _apply_rule
-    from pqbs.contracts import Sensitivity
 
     # "maybe" is not in the boolean map → is_ambiguous=True
     normalized_val, is_ambiguous = _apply_rule("boolean", "maybe")

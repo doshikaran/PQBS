@@ -6,9 +6,6 @@ from __future__ import annotations
 
 import json
 import threading
-from uuid import uuid4
-
-import pytest
 
 from pqbs.telemetry.metrics import MetricsCollector
 

@@ -6,10 +6,8 @@ from __future__ import annotations
 
 from datetime import datetime, timezone
 from typing import Any
-from unittest.mock import MagicMock, call, patch
-from uuid import UUID, uuid4
-
-import pytest
+from unittest.mock import MagicMock
+from uuid import UUID
 
 from pqbs.agents.integrity.a5_drift import DriftAgent, DriftAlert, DriftScanResult
 from pqbs.agents.integrity.audit_sink import AuditSink
