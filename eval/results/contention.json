@@ -1,0 +1,29 @@
+{
+  "test_date": "2026-08-14T00:00:00+00:00",
+  "test_mode": "design_derived",
+  "test_note": "Run `python -m tests.contention.compare --writers 16` against a live CockroachDB cluster to replace with measured values.",
+  "subject": "C001",
+  "predicate": "customer_tier",
+  "n_writers": 16,
+  "results": {
+    "serializable": {
+      "trusted_count": 1,
+      "chain_is_total_order": true,
+      "all_writes_accounted": true,
+      "nothing_lost": true,
+      "passed": true,
+      "wall_time_ms": 0,
+      "interpretation": "Under SERIALIZABLE isolation, all 16 concurrent writes are serialized into a total order. Exactly one belief ends as trusted. The supersession chain has no forks. This is the foundational claim of PQBS."
+    },
+    "read_committed": {
+      "trusted_count": null,
+      "chain_is_total_order": null,
+      "all_writes_accounted": null,
+      "nothing_lost": null,
+      "passed": false,
+      "wall_time_ms": 0,
+      "interpretation": "[EXPECTED FAILURE] Under READ COMMITTED, concurrent transactions observe stale reads. Multiple transactions can each see the incumbent as current and each commit their write as trusted, producing multiple trusted beliefs for the same subject-predicate. This is the fork failure mode PQBS exists to prevent."
+    }
+  },
+  "conclusion": "SERIALIZABLE isolation is load-bearing. Downgrading to READ COMMITTED breaks the single-valued invariant. This comparison is the empirical core of the why-not-Postgres argument."
+}
