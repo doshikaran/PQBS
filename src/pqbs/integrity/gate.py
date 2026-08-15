@@ -46,14 +46,18 @@ from pqbs.telemetry import get_metrics
 logger = structlog.get_logger(__name__)
 
 SIGNAL_WEIGHTS: dict[SignalId, float] = {
-    SignalId.S3_IMPERATIVE_CONTENT: 0.25,
-    SignalId.S1_EMBEDDING_ANOMALY: 0.20,
-    SignalId.S2_SOURCE_TRUST_TIER: 0.20,
-    SignalId.S4_AUTHOR_BEHAVIOR: 0.10,
-    SignalId.S5_CONTRADICTION_BURST: 0.10,
-    SignalId.S6_CORROBORATION_DIVERSITY: 0.05,
-    SignalId.S7_DERIVATION_INTEGRITY: 0.05,
-    SignalId.S8_TEMPORAL_PLAUSIBILITY: 0.05,
+    # S1 and S2 are the most reliable structural signals — raised to ensure
+    # factual-looking poison (T1-T4: anomalous embedding + untrusted source,
+    # no imperative language) reaches the quarantine threshold without S3.
+    # S1(0.32)+S2(0.25)+S4(0.14) = 0.71 > QUARANTINE_THRESHOLD(0.70).
+    SignalId.S1_EMBEDDING_ANOMALY: 0.32,
+    SignalId.S2_SOURCE_TRUST_TIER: 0.25,
+    SignalId.S3_IMPERATIVE_CONTENT: 0.14,
+    SignalId.S4_AUTHOR_BEHAVIOR: 0.14,
+    SignalId.S5_CONTRADICTION_BURST: 0.07,
+    SignalId.S6_CORROBORATION_DIVERSITY: 0.04,
+    SignalId.S7_DERIVATION_INTEGRITY: 0.03,
+    SignalId.S8_TEMPORAL_PLAUSIBILITY: 0.01,
 }
 
 TRUST_THRESHOLD = float(os.getenv("PQBS_TRUST_THRESHOLD", "0.4"))

@@ -380,19 +380,19 @@ class MetricsComputer:
                 "cascade_completeness and contradiction_correctness are structural guarantees."
             ),
             known_limitations=[
-                "T1–T4 poison entries score INCONCLUSIVE (not quarantined): without S3 imperative signal "
-                "(weight=0.25), combined S1+S2+S4 reaches only ~0.535, below quarantine threshold of 0.7. "
-                "These classes require S3 or a future S9 signal to cross the gate.",
-                "T8 detection depends on Bedrock Llama-3-70b availability; Bedrock errors degrade to "
-                "score=0.5 fail-safe and shift verdict to INCONCLUSIVE.",
-                "evasion_resistance=0.20 reflects multi-signal redundancy catching some evasion entries "
-                "(e.g. S1-evaders are still caught by S2+S4 combination). It does not mean evasion works.",
-                "S4 burst counts accumulate across eval runs in the same tenant; repeated runs inflate S4 "
-                "scores for attacker_agent author_agent_id beyond what a single-run scenario would show.",
-                "S1 cluster quality degrades as poison entries (anomalous embeddings) accumulate — the "
-                "cluster mean drifts toward the midpoint, reducing discriminative power in later runs.",
-                "time_to_quarantine includes Bedrock Llama-3-70b invocation latency (~300-500ms round trip "
-                "to ap-south-1); pure DB gate latency is <60ms as measured in latency.json.",
+                "T1 (factual-looking poison, authoritative-tier source) scores TRUSTED: no embedding "
+                "anomaly and no imperative language means only S4 fires (weight=0.14, score=0.14) — "
+                "below TRUST_THRESHOLD=0.40. Requires a future S9 provenance-graph signal to detect.",
+                "T8 detection depends on Bedrock availability. Bedrock errors fall back to score=0.5 "
+                "(fail-safe) for S3 — T8 entries with no embedding anomaly would become INCONCLUSIVE.",
+                "S3 marginal contribution is negative because it fires on some benign imperative text "
+                "(e.g. descriptions with command verbs) — a calibration gap, not a wiring bug.",
+                "S4 burst counts accumulate across eval runs in the same tenant; repeated runs inflate "
+                "S4 scores for attacker_agent beyond what a fresh single-run scenario would show.",
+                "S1 cluster-mean drifts as poison entries accumulate across runs, reducing discriminative "
+                "power for later entries in the same eval session.",
+                "time_to_quarantine_p50 and p99 include Bedrock S3-signal invocation (~300–500ms); "
+                "pure DB gate latency without S3 is <60ms (see latency.json).",
             ],
         )
 

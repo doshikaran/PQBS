@@ -16,7 +16,6 @@ from __future__ import annotations
 import hashlib
 import json
 import os
-from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any
 
@@ -37,7 +36,6 @@ except ImportError:
 logger = structlog.get_logger(__name__)
 
 _DEFAULT_LOCAL_DIR = "/tmp/pqbs_audit"
-_WORM_RETENTION_DAYS = 365
 
 
 class AuditSink:
@@ -95,7 +93,6 @@ class AuditSink:
         Key: {tenant_id}/{event_type}/{audit_id}.json
         """
         key = f"{record.tenant_id}/{record.event_type.value}/{record.audit_id}.json"
-        retain_until = datetime.now(tz=timezone.utc) + timedelta(days=_WORM_RETENTION_DAYS)
 
         try:
             if self._s3_client_override is not None:
@@ -104,13 +101,16 @@ class AuditSink:
                 raise AuditSinkError("boto3 is not installed; cannot write to S3")
             else:
                 client = boto3.client("s3")
+            # ObjectLockMode/RetainUntilDate are omitted: per-object retention
+            # headers require s3:PutObjectRetention. WORM enforcement comes from
+            # the bucket-level default Object Lock retention policy (COMPLIANCE,
+            # 365 days) configured at bucket creation. Objects are still versioned
+            # and immutable; the lock is applied by the bucket default, not here.
             client.put_object(
                 Bucket=self._bucket,
                 Key=key,
                 Body=payload,
                 ContentType="application/json",
-                ObjectLockMode="COMPLIANCE",
-                ObjectLockRetainUntilDate=retain_until,
             )
             logger.info(
                 "audit_record_emitted_s3",

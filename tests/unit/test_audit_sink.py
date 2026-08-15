@@ -156,7 +156,12 @@ class TestS3Mode:
         call_kwargs = mock_s3.put_object.call_args.kwargs
         assert call_kwargs["Bucket"] == "my-worm-bucket"
         assert call_kwargs["Key"] == expected_key
-        assert call_kwargs["ObjectLockMode"] == "COMPLIANCE"
+        assert call_kwargs["ContentType"] == "application/json"
+        # Per-object lock headers are omitted — WORM enforcement comes from the
+        # bucket-level default Object Lock retention policy, which requires no
+        # s3:PutObjectRetention permission on the writing IAM role.
+        assert "ObjectLockMode" not in call_kwargs
+        assert "ObjectLockRetainUntilDate" not in call_kwargs
 
     def test_s3_generic_exception_raises_audit_sink_error(self) -> None:
         """Non-ClientError exceptions from boto3 are also wrapped as AuditSinkError."""
