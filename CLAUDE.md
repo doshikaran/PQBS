@@ -116,3 +116,17 @@ Escalate to the Lead (and ultimately to the human) when:
 - Any action would affect another owner's domain without their agreement.
 
 Do not silently invent architectural decisions. Preserve the ambiguity and escalate.
+
+---
+
+## `pqbs` Demo Launcher
+
+**Entry point:** `src/pqbs/cli/launcher.py` (registered as `pqbs` in pyproject.toml `[project.scripts]`)
+
+**What it does:** Validates env vars → tests DB connection → seeds demo data if absent → starts the FastAPI backend (which serves the pre-built React SPA from `demo/ui/frontend/dist/`) → opens the browser.
+
+**Flags:** `--reset` (wipe + reseed), `--no-browser` (no auto-open), `--port PORT` (default 8080).
+
+**This is a thin launcher, not a feature surface.** Do not add new visualization logic, new configuration, new API endpoints, or new seed data here. New demo features belong in `demo/ui/app.py` (API) or `demo/ui/frontend/src/` (React). The launcher calls `scripts/seed_demo.py` — changes to seed content go there, not here.
+
+**To run:** Install the package (`pip install -e .`) then run `pqbs` from the repo root.

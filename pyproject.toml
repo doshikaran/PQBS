@@ -1,6 +1,6 @@
 [build-system]
 requires = ["setuptools>=68", "wheel"]
-build-backend = "setuptools.backends.legacy:build"
+build-backend = "setuptools.build_meta"
 
 [project]
 name = "pqbs"
@@ -19,6 +19,9 @@ dependencies = [
     "uvicorn>=0.30",
     "sqlalchemy>=2.0",
 ]
+
+[project.scripts]
+pqbs = "pqbs.cli.launcher:main"
 
 [project.optional-dependencies]
 dev = [
