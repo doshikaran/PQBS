@@ -158,6 +158,199 @@ File: `tests/integration/test_failure_modes.py` (marker: `@pytest.mark.integrati
 
 ---
 
+## Phase 6.5 — Self-Verification: Posture and Custody
+
+**Completed:** 2026-08-15
+**Unit tests:** 30/30 passed (13 A18 posture + 17 A19 custody)
+**No live DB or AWS required** — all verified via mocked DB connections, mocked WORM sink, and mocked ccloud CLI subprocess
+
+### A18 — Posture Verification Agent
+
+**File:** `src/pqbs/agents/integrity/a18_posture.py` (412 lines)
+**Baseline:** `docs/posture-baseline.json` (committed outside the DB — a baseline living inside the system it verifies can be altered by whoever altered the system)
+
+A18 introspects five control classes from the live DB, diffs against the committed baseline, and writes an audit record to the WORM sink on every cycle.
+
+| Control class | What is verified | Baseline source |
+|---|---|---|
+| Roles | All 5 DB roles present; no unexpected roles | Migration `0011_roles` |
+| Check constraints | All constraints on `belief` table | Migrations `0005`, `0002` |
+| Views | `v_trusted_current` (and others) exist | Migration `0012_views` |
+| Vector index | `belief_tenant_embedding_idx` present | Migration `0006_vector_index` |
+| TTL tables | `working_memory` has active TTL | Migration `0010_working_memory` |
+
+#### Drift detection test (T11 — Control Drift)
+
+**Scenario:** `role_consumer` is revoked (simulates deliberate attack or misconfiguration).
+
+**Test:** `test_run_verification_cycle_raises_and_writes_audit_on_drift`
+
+```
+GIVEN  baseline contains role_consumer
+WHEN   live DB returns [role_auditor, role_integrity, role_producer, role_semantics]
+       (role_consumer missing)
+THEN   PostureDriftError raised with finding {control_name="role_consumer", observed="missing"}
+AND    AuditSink.emit() called once with event_type="posture_drift_detected"
+```
+
+**Result:** PASS — drift detected within the same verification cycle. Audit record written to WORM sink before raising the error (evidence preserved even if the caller suppresses the exception).
+
+#### Clean match — attestation written
+
+**Test:** `test_run_verification_cycle_writes_attestation_on_clean_match`
+
+```
+GIVEN  live DB posture matches baseline exactly (all 5 control classes match)
+WHEN   run_verification_cycle() completes
+THEN   result.has_drift == False, result.findings == []
+AND    AuditSink.emit() called once with event_type="posture_attested"
+```
+
+**Result:** PASS — clean cycles produce a signed attestation in the WORM audit trail.
+
+#### A18 cannot remediate — negative test
+
+**Test:** `test_a18_cannot_remediate`
+
+```
+GIVEN  PostureVerificationAgent instance
+THEN   agent has no `revoke_grant`, `remediate`, or `alter_role` method
+```
+
+**Result:** PASS — A18 is structurally read-only. It cannot silently cause the drift it is meant to detect.
+
+#### All control-class drift scenarios
+
+| Test | Drift injected | Detected |
+|------|---------------|----------|
+| `test_verify_posture_detects_missing_role` | `role_semantics` removed | ✅ |
+| `test_verify_posture_detects_unexpected_role` | `role_backdoor` added | ✅ |
+| `test_verify_posture_detects_missing_constraint` | `belief_sensitivity_check` removed | ✅ |
+| `test_verify_posture_detects_missing_view` | `v_trusted_current` removed | ✅ |
+| `test_verify_posture_detects_missing_vector_index` | `belief_tenant_embedding_idx` removed | ✅ |
+| `test_verify_posture_detects_missing_ttl` | `working_memory` TTL removed | ✅ |
+
+**Full test run (2026-08-15):**
+```
+tests/unit/test_posture.py::test_capture_live_posture_returns_all_five_control_classes PASSED
+tests/unit/test_posture.py::test_capture_live_posture_tolerates_crdb_internal_failure PASSED
+tests/unit/test_posture.py::test_verify_posture_returns_no_findings_when_state_matches PASSED
+tests/unit/test_posture.py::test_verify_posture_detects_missing_role PASSED
+tests/unit/test_posture.py::test_verify_posture_detects_unexpected_role PASSED
+tests/unit/test_posture.py::test_verify_posture_detects_missing_constraint PASSED
+tests/unit/test_posture.py::test_verify_posture_detects_missing_view PASSED
+tests/unit/test_posture.py::test_verify_posture_detects_missing_vector_index PASSED
+tests/unit/test_posture.py::test_verify_posture_detects_missing_ttl PASSED
+tests/unit/test_posture.py::test_run_verification_cycle_writes_attestation_on_clean_match PASSED
+tests/unit/test_posture.py::test_run_verification_cycle_raises_and_writes_audit_on_drift PASSED
+tests/unit/test_posture.py::test_a18_cannot_remediate PASSED
+tests/unit/test_posture.py::test_posture_state_round_trips_through_dict PASSED
+13 passed in 0.65s
+```
+
+---
+
+### A19 — Substrate Custody Agent
+
+**File:** `src/pqbs/agents/integrity/a19_custody.py` (437 lines)
+**Tool:** `ccloud` CLI (mocked via `subprocess` in tests; real ccloud in production)
+**Cluster:** `71b13406-ccdb-481e-b0dc-f4aa75718234` (higher-panther-31862.j77.aws-ap-south-1.cockroachlabs.cloud)
+
+A19 has two responsibilities: (1) poll the CockroachDB Cloud control-plane audit log and ingest each event into the WORM sink (second audit layer, §17), and (2) maintain a backup catalog to support Mechanism 3 temporal reconstruction beyond the MVCC GC window.
+
+#### Insider-threat detection (T12 — Substrate Tampering)
+
+**Scenario:** An administrative action (`sql.user.create`) is performed against the cluster. A19 surfaces it in the WORM audit trail.
+
+**Test:** `test_run_audit_ingestion_cycle_polls_and_ingests`
+
+```
+GIVEN  ccloud returns one audit event:
+       {type="sql.user.create", actor="service-account-test@pqbs",
+        target_user="new_sql_user", timestamp="2026-08-14T11:00:00Z"}
+WHEN   run_audit_ingestion_cycle() executes
+THEN   ingested == 1
+AND    AuditSink.emit() called once with:
+       event_type="control_plane_audit_ingested"
+       after["ccloud_event_type"] == "sql.user.create"
+       after["actor"] == "service-account-test@pqbs"
+```
+
+**Result:** PASS — administrative control-plane events are captured in the WORM audit sink within one polling cycle.
+
+**Resilience:** A19 returns an empty list (not an exception) when `ccloud` is absent or returns an error code — the custody agent does not bring down the system if the CLI is temporarily unavailable.
+
+| Failure scenario | Behaviour |
+|---|---|
+| `ccloud` not installed | Returns `[]`, logs warning |
+| `ccloud` exits non-zero | Returns `[]`, logs warning |
+| WORM sink fails on one event | Continues processing remaining events; returns count of successfully ingested |
+
+#### Mechanism 3 — Backup-anchored temporal reconstruction
+
+**Test:** `test_mechanism_3_query_finds_covering_backup`
+
+```
+GIVEN  backup catalog contains bk-001 covering 2026-08-13T00:00 → 2026-08-14T00:30
+WHEN   mechanism_3_query(query_time=2026-08-13T12:00) called
+THEN   result.has_coverage == True
+AND    result.covering_backup.backup_id == "bk-001"
+AND    result.coverage_note contains "cannot restore autonomously"
+```
+
+**Result:** PASS — A19 identifies the covering backup and explicitly notes it cannot restore autonomously (human authorization required).
+
+**Gap reporting (tested):** When no backup covers the requested timestamp, `result.has_coverage == False` and `coverage_note` describes the gap explicitly rather than returning a silent empty result.
+
+#### A19 cannot restore — negative test
+
+**Test:** `test_a19_cannot_restore`
+
+```
+GIVEN  SubstrateCustodyAgent instance
+THEN   agent has no `restore`, `restore_backup`, or `rollback_to` method
+AND    agent HAS `trigger_backup` method (backup trigger allowed; restore is not)
+```
+
+**Result:** PASS — A19 can initiate backups but structurally cannot restore. Restoration requires human authorization, preventing an agent from rolling back an inconvenient audit trail.
+
+**Full test run (2026-08-15):**
+```
+tests/unit/test_custody.py::test_parse_audit_event_extracts_fields PASSED
+tests/unit/test_custody.py::test_parse_audit_event_handles_missing_timestamp PASSED
+tests/unit/test_custody.py::test_parse_backup_entry_extracts_fields PASSED
+tests/unit/test_custody.py::test_parse_backup_entry_handles_missing_timestamps PASSED
+tests/unit/test_custody.py::test_poll_control_plane_audit_parses_events PASSED
+tests/unit/test_custody.py::test_poll_control_plane_audit_returns_empty_when_ccloud_missing PASSED
+tests/unit/test_custody.py::test_poll_control_plane_audit_returns_empty_on_runtime_error PASSED
+tests/unit/test_custody.py::test_ingest_events_to_worm_emits_one_record_per_event PASSED
+tests/unit/test_custody.py::test_ingest_events_to_worm_returns_zero_for_empty_list PASSED
+tests/unit/test_custody.py::test_ingest_events_to_worm_continues_after_sink_failure PASSED
+tests/unit/test_custody.py::test_list_backups_returns_parsed_entries PASSED
+tests/unit/test_custody.py::test_list_backups_uses_cache_on_second_call PASSED
+tests/unit/test_custody.py::test_mechanism_3_query_finds_covering_backup PASSED
+tests/unit/test_custody.py::test_mechanism_3_query_reports_gap_when_no_covering_backup PASSED
+tests/unit/test_custody.py::test_mechanism_3_query_reports_no_backups_when_catalog_empty PASSED
+tests/unit/test_custody.py::test_a19_cannot_restore PASSED
+tests/unit/test_custody.py::test_run_audit_ingestion_cycle_polls_and_ingests PASSED
+17 passed in 0.65s
+```
+
+---
+
+### Phase 6.5 Summary
+
+| Agent | Tests | Drift/Threat detected | Cannot remediate/restore | WORM record written |
+|---|---|---|---|---|
+| A18 PostureVerification | 13/13 ✅ | ✅ (role REVOKE, 6 control classes) | ✅ (no remediate method) | ✅ (posture_attested / posture_drift_detected) |
+| A19 SubstrateCustody | 17/17 ✅ | ✅ (sql.user.create ingested) | ✅ (no restore method) | ✅ (control_plane_audit_ingested) |
+
+**Combined:** 30/30 tests passing. Both agents enforce the authority-boundary invariant (detect-only / backup-only) at the structural level.
+
+**Note:** ccloud CLI integration is mocked in unit tests (no live ccloud available in CI). Production deployment requires `ccloud` installed and a scoped service account with read + backup authority — see `docs/decisions/P9-a16-federation.md` for the authority boundary rationale and `src/pqbs/agents/integrity/a19_custody.py` for the production invocation path.
+
+---
+
 ## Phase 6 — Recall and Audit Surface
 
 **A9 — RecallEngine:**
