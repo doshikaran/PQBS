@@ -29,7 +29,12 @@ from pqbs.contracts import (
     Sensitivity,
 )
 from pqbs.contracts.enums import SourceType, TrustTier
-from pqbs.contracts.exceptions import BeliefValidationError
+from pqbs.contracts.exceptions import (
+    AdmissionRejectedError,
+    AdmissionThrottledError,
+    BeliefValidationError,
+)
+from pqbs.agents.producer.a13_admission import AdmissionAgent
 from pqbs.agents.semantics.canonicalize import canonicalize
 from pqbs.agents.semantics.embed import embed_normalized
 from pqbs.agents.semantics.resolve import resolve
@@ -303,7 +308,13 @@ def ingest(
 
     Raises:
         BeliefValidationError: If author_agent_id is not active.
+        AdmissionRejectedError: If per-agent hourly quota is exhausted.
+        AdmissionThrottledError: If screening queue depth is too high (retry later).
     """
+    # Step 0: Rate limiting / admission control (A13)
+    # Must run before any Bedrock calls to avoid paying extraction cost on rejected writes.
+    AdmissionAgent().enforce(author_agent_id, tenant_id, conn)
+
     # Step 1: Validate author_agent_id is active
     # Use autocommit-safe single read (not inside a txn)
     agent_row = conn.execute(

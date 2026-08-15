@@ -48,3 +48,24 @@ class EmbeddingError(PQBSError):
 
 class InsufficientTrustError(PQBSError):
     """Raised when a recall request asks for beliefs below the minimum trust threshold."""
+
+
+class AdmissionRejectedError(PQBSError):
+    """Raised when A13 rejects a write because the per-agent quota is exhausted.
+
+    The caller must surface this to the producer — unlike throttle, rejected
+    writes will not succeed on immediate retry.
+    """
+
+
+class AdmissionThrottledError(PQBSError):
+    """Raised when A13 throttles a write because the screening queue is too deep.
+
+    The caller should retry after the delay indicated in the error message.
+    Unlike rejection, throttle is transient — queue depth will decrease as the
+    gate processes pending beliefs.
+    """
+
+
+class ConsolidationError(PQBSError):
+    """Raised when the A8 consolidation agent encounters an unrecoverable error."""
