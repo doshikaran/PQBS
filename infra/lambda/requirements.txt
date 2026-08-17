@@ -1,0 +1,9 @@
+# Lambda screening worker dependencies
+# Pin to exact versions matching the project lockfile.
+# Run `pip install -r requirements.txt -t ./package/` before deploy.sh bundles.
+psycopg[binary]==3.3.4
+boto3==1.43.70
+pydantic==2.13.4
+structlog==26.1.0
+numpy==2.5.2
+python-dotenv==1.2.2

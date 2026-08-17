@@ -177,7 +177,7 @@ WHERE b.tenant_id = %s
             try:
                 conn.execute(
                     """
-SELECT provenance_id, source_type, source_trust_tier, source_uri, author_agent_id, source_digest
+SELECT provenance_id, source_type, source_trust_tier, source_uri, ingestion_agent_id, source_digest
 FROM provenance
 WHERE provenance_id = ANY(%s::uuid[]) AND tenant_id = %s
 """,

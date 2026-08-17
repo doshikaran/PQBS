@@ -59,7 +59,7 @@ class AuditEngine:
         as_of = query.as_of
 
         sql = """
-SELECT b.*, p.source_type, p.source_trust_tier, p.source_uri, p.author_agent_id
+SELECT b.*, p.source_type, p.source_trust_tier, p.source_uri, p.ingestion_agent_id
 FROM belief b
 LEFT JOIN provenance p ON p.provenance_id = b.provenance_id AND p.tenant_id = b.tenant_id
 WHERE b.tenant_id = %s

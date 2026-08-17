@@ -57,13 +57,14 @@ def _insert_belief(
     conn.execute(
         """
 INSERT INTO provenance (provenance_id, tenant_id, source_type, source_trust_tier,
-                        source_digest, ingested_at, ingestion_agent_id)
-VALUES (%s, %s, 'user_statement', 'unverified', %s, %s, 'test-agent')
+                        source_digest, episode_id, ingested_at, ingestion_agent_id)
+VALUES (%s, %s, 'user_statement', 'unverified', %s, %s, %s, 'test-agent')
 """,
         (
             str(provenance_id),
             str(tenant_id),
             "a" * 64,
+            str(uuid.uuid4()),
             now,
         ),
     )

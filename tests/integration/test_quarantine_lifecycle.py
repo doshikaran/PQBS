@@ -45,8 +45,8 @@ _NOW = datetime(2026, 8, 13, 12, 0, 0, tzinfo=timezone.utc)
 def _insert_agent(conn: psycopg.Connection[Any], tenant_id: UUID, agent_id: str) -> None:
     conn.execute(
         """
-        INSERT INTO agent_identity (agent_id, tenant_id, agent_class, status, trust_multiplier)
-        VALUES (%s, %s, 'integrity', 'active', 1.0)
+        INSERT INTO agent_identity (agent_id, tenant_id, agent_class, db_role, credential_ref, status, trust_multiplier)
+        VALUES (%s, %s, 'integrity', 'role_integrity', 'test-credential', 'active', 1.0)
         ON CONFLICT (tenant_id, agent_id) DO NOTHING
         """,
         (agent_id, str(tenant_id)),
@@ -65,14 +65,15 @@ def _insert_provenance(
         """
         INSERT INTO provenance
             (provenance_id, tenant_id, source_type, source_uri, source_digest,
-             source_trust_tier, author_agent_id, derived_from)
-        VALUES (%s, %s, 'user_statement', NULL, %s, %s, 'test-agent', %s)
+             episode_id, ingested_at, source_trust_tier, ingestion_agent_id, derived_from)
+        VALUES (%s, %s, 'user_statement', NULL, %s, %s, NOW(), %s, 'test-agent', %s)
         ON CONFLICT (tenant_id, provenance_id) DO NOTHING
         """,
         (
             str(provenance_id),
             str(tenant_id),
             digest,
+            str(uuid4()),
             tier.value,
             json.dumps([str(d) for d in (derived_from or [])]),
         ),
