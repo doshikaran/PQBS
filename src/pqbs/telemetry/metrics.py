@@ -267,7 +267,6 @@ class MetricsCollector:
             FROM belief
             WHERE tenant_id = %s
               AND screened_at IS NOT NULL
-              AND tx_from >= now() - interval '1 hour'
             ORDER BY tx_from DESC
             LIMIT 500
             """,

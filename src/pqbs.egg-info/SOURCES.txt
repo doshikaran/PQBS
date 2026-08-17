@@ -21,11 +21,13 @@ src/pqbs/agents/integrity/a19_custody.py
 src/pqbs/agents/integrity/a2_inference.py
 src/pqbs/agents/integrity/a5_drift.py
 src/pqbs/agents/integrity/a6_cascade.py
+src/pqbs/agents/integrity/a8_consolidation.py
 src/pqbs/agents/integrity/audit_sink.py
 src/pqbs/agents/integrity/drift_scheduler.py
 src/pqbs/agents/platform/__init__.py
 src/pqbs/agents/platform/a17_telemetry.py
 src/pqbs/agents/producer/__init__.py
+src/pqbs/agents/producer/a13_admission.py
 src/pqbs/agents/producer/correct.py
 src/pqbs/agents/producer/ingest.py
 src/pqbs/agents/semantics/__init__.py

@@ -1,8 +1,10 @@
 # Poison-Quarantine Belief Store (PQBS)
 
-**Most memory systems solve remembering. This one solves whether what you remember can be trusted.**
+AI agents are moving into production — writing code, running pipelines, diagnosing incidents — and they need memory that never goes down. CockroachDB solves that: globally distributed, always-on, zero data loss, no maintenance windows. It is the right foundation for agentic memory.
 
-PQBS is a shared memory layer for multi-agent systems that treats agent memory as a security-critical, transactionally-governed asset. Every belief is bitemporal and never destructively overwritten. Every contradiction is resolved deterministically under serializable isolation. Every write is screened by an asynchronous integrity gate before it can influence retrieval. Every state transition is attributable to a specific agent identity and recorded immutably in a WORM audit sink.
+**We took that foundation and asked what comes next: can you actually trust what's in it?**
+
+An always-on memory store that can be silently poisoned is not a feature — it's a liability. PQBS is the integrity layer that sits on top of CockroachDB's reliability guarantees. Every belief is held in a screening gate before it can be retrieved. Every contradiction is resolved deterministically under serializable isolation, with no silent overwrites. Every state transition is recorded immutably in a WORM audit sink. The result: agent memory that is not only always available, but trustworthy.
 
 > **Hackathon:** CockroachDB × AWS — Build with Agentic Memory
 > **Cluster:** CockroachDB Serverless v26.2.5 · `higher-panther-31862.j77.aws-ap-south-1.cockroachlabs.cloud`
