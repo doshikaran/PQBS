@@ -164,6 +164,7 @@ class BeliefPoller:
                     screener_version=SCREENER_VERSION,
                 )
                 self._gate.screen(event, conn)
+                conn.commit()
                 screened_count += 1
                 logger.debug(
                     "poller_screened",
@@ -171,6 +172,7 @@ class BeliefPoller:
                     tenant_id=str(snapshot.tenant_id),
                 )
             except Exception as exc:
+                conn.rollback()
                 logger.error(
                     "poller_screen_error",
                     belief_id=str(row.get("belief_id", "unknown")),
