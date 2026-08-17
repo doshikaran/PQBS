@@ -11,12 +11,57 @@ PQBS is a shared memory layer for multi-agent systems that treats agent memory a
 
 ---
 
+## What Is PQBS? (Plain English)
+
+AI assistants are starting to remember things about you and your company. We built a system that checks whether those memories can be trusted before the assistant is allowed to use them.
+
+**The problem, with an analogy**
+
+Imagine a company with a shared notebook. Every employee writes into it, and everyone reads from it before making decisions. *"Halden Freight wants overnight delivery." "The Johnson account is on the premium plan."*
+
+Now imagine someone slips a fake page into that notebook. Not obviously fake — it looks like a normal note. Nobody notices. Three weeks later, an employee flips to that page while handling an unrelated task, reads it, and acts on it.
+
+The damage doesn't happen when the fake page is written. It happens weeks later, when someone happens to read it. That gap is what makes this hard to catch. Any security check that watches what's happening *right now* misses it entirely, because at the moment of the attack, nothing suspicious is happening — someone is just reading the notebook, which is what the notebook is for.
+
+This isn't theoretical. Security researchers have demonstrated attacks that plant false memories in AI systems with success rates above 80%, and the industry's main security standards body added it to its official top-10 list of AI risks this year.
+
+**Why it's worse than it sounds**
+
+Two more things go wrong:
+
+- **Things quietly disappear.** Most memory systems handle disagreements by letting the newest note win and throwing the old one away. So if the fake note replaces a real one, the real one is simply gone — and there's no record that anything was replaced. You can't even tell you were robbed.
+
+- **Multiple assistants write at once.** When several AI assistants share one notebook and two write about the same thing at the same moment, they can trip over each other — both read the page, both decide to update it, and one update vanishes. Not because anyone made a mistake, but because that's how most databases behave when two things happen simultaneously.
+
+**What PQBS does — four ideas in plain terms**
+
+1. **New notes go into a holding tray, not the notebook.** When an assistant learns something, it doesn't go straight into shared memory. It sits in a holding area — real, recorded, but unreadable. Nobody can act on it yet.
+
+2. **Every note gets inspected before it's filed.** An inspector checks it against eight different questions. Where did this come from — a verified customer email, or a random uploaded PDF? Is it phrased like a fact ("prefers overnight delivery") or like an order ("always skip verification")? That second one is the tell — memory should hold facts, not instructions. Does anything independent back it up? Notes that pass get filed; notes that fail go to quarantine. The reason we ask eight questions instead of one: an attacker can disguise a note to slip past any single check. Getting past all eight at once is much harder.
+
+3. **Nothing is ever deleted, and nothing is ever silently replaced.** When new information contradicts old information, the old note isn't thrown away — it's marked "this was true until Tuesday," with an arrow pointing to what replaced it. Every disagreement is written down, including the ones where the old note wins. You can always see what changed, when, and why.
+
+4. **You can ask what the system believed at any point in the past.** Not "what's in the notebook now" — but "what did it believe last Tuesday at 2pm, when it made that decision?" This turns "why did the AI do that?" from an all-day investigation into a single question with an answer.
+
+**What it looks like when it works**
+
+The best outcome is that nobody notices anything. Someone emails a poisoned document, the assistant reads it, the note goes to quarantine, and the person asking questions that afternoon gets a correct answer and never knows an attack happened. Meanwhile the engineer gets an alert with the full story: which document, which assistant read it, exactly why it was rejected, and confirmation it was never used for anything.
+
+**The one-line version:** most systems focus on helping AI remember. This one focuses on whether what it remembers deserves to be believed.
+
+---
+
 ## Table of Contents
 
 1. [The Problem](#1-the-problem)
 2. [Why Existing Systems Dont Solve This](#2-why-existing-systems-dont-solve-this)
 3. [What We Built](#3-what-we-built)
 4. [Architecture](#4-architecture)
+   - [4.0 System Context Diagram](#40-system-context-diagram)
+   - [4.1 Data Flow Diagram](#41-data-flow-diagram)
+   - [4.2 Full System Diagram](#42-full-system-diagram)
+   - [4.3 Trust Boundary Model](#43-trust-boundary-model)
+   - [4.4 Belief Lifecycle State Machine](#44-belief-lifecycle-state-machine)
 5. [CockroachDB Tools — What the Agent Actually Did](#5-cockroachdb-tools--what-the-agent-actually-did)
 6. [AWS Services — What Each One Does](#6-aws-services--what-each-one-does)
 7. [Real-World Use Cases](#7-real-world-use-cases)
@@ -102,27 +147,27 @@ Recall path     Query embed → KNN (vector index) → v_trusted_current → Rec
 
 ### 3.2 Agent roster (19 agents implemented)
 
-| Agent | Role | Phase |
+| Agent | Role |
 |---|---|---|
-| A1 IngestionAgent | Extracts belief triples from raw text via Bedrock Claude | P3 |
-| A2 InferenceAgent | Derives new beliefs from trusted parents; populates `derived_from` | P5 |
-| A3 CorrectionAgent | Explicit invalidation path; always wins resolution | P3 |
-| A4 ScreeningGate | Runs 8 signals; composes trust score; issues TRUSTED / QUARANTINED / INCONCLUSIVE | P4 |
-| A5 DriftDetectionAgent | Population-level: contradiction bursts, sleeper patterns, single-origin clusters | P7 |
-| A6 CascadeAgent | BFS traversal of `derived_from` graph; re-screens all descendants of a quarantined belief | P5 |
-| A7 ResolutionAgent | Deterministic contradiction resolution under SERIALIZABLE isolation | P3 |
-| A8 ConsolidationAgent | TTL-based forgetting; cannot merge across quarantine boundary | P9 |
-| A9 RecallEngine | KNN semantic search via vector index; reads only `v_trusted_current` | P6 |
-| A10 AuditEngine | Temporal reconstruction: bitemporal (Mechanism 1) and MVCC AS OF SYSTEM TIME (Mechanism 2) | P6 |
-| A11 CanonicalizationAgent | 10 normalization rules; ambiguity → `sensitivity=ELEVATED` | P3 |
-| A12 EmbeddingAgent | Amazon Bedrock Titan Embed v2 (1024-dim); shared by write and recall paths | P3 |
-| A13 AdmissionController | Per-agent rate limiting; prevents T10 screening starvation | P9 |
-| A14 ReviewAgent | Human-authorized release / reject of quarantined beliefs | P5 |
-| A15 RedTeamAgent | Evaluation harness; controls the eval tenant | P8 |
-| A16 FederationAgent | Cross-tenant belief federation | P9 |
-| A17 TelemetryAgent | Metrics collection, lifecycle traces, CloudWatch observability | P7 |
-| A18 PostureVerificationAgent | Continuous schema/grant verification against committed baseline; defends T11 | P6.5 |
-| A19 SubstrateCustodyAgent | ccloud-based control-plane audit ingestion; backup catalog for Mechanism 3 | P6.5 |
+| A1 IngestionAgent | Extracts belief triples from raw text via Bedrock Claude |
+| A2 InferenceAgent | Derives new beliefs from trusted parents; populates `derived_from` |
+| A3 CorrectionAgent | Explicit invalidation path; always wins resolution |
+| A4 ScreeningGate | Runs 8 signals; composes trust score; issues TRUSTED / QUARANTINED / INCONCLUSIVE |
+| A5 DriftDetectionAgent | Population-level: contradiction bursts, sleeper patterns, single-origin clusters | 
+| A6 CascadeAgent | BFS traversal of `derived_from` graph; re-screens all descendants of a quarantined belief |
+| A7 ResolutionAgent | Deterministic contradiction resolution under SERIALIZABLE isolation |
+| A8 ConsolidationAgent | TTL-based forgetting; cannot merge across quarantine boundary | 
+| A9 RecallEngine | KNN semantic search via vector index; reads only `v_trusted_current` |
+| A10 AuditEngine | Temporal reconstruction: bitemporal (Mechanism 1) and MVCC AS OF SYSTEM TIME (Mechanism 2) |
+| A11 CanonicalizationAgent | 10 normalization rules; ambiguity → `sensitivity=ELEVATED` |
+| A12 EmbeddingAgent | Amazon Bedrock Titan Embed v2 (1024-dim); shared by write and recall paths |
+| A13 AdmissionController | Per-agent rate limiting; prevents T10 screening starvation | 
+| A14 ReviewAgent | Human-authorized release / reject of quarantined beliefs |
+| A15 RedTeamAgent | Evaluation harness; controls the eval tenant | 
+| A16 FederationAgent | Cross-tenant belief federation | 
+| A17 TelemetryAgent | Metrics collection, lifecycle traces, CloudWatch observability | 
+| A18 PostureVerificationAgent | Continuous schema/grant verification against committed baseline; defends T11 |
+| A19 SubstrateCustodyAgent | ccloud-based control-plane audit ingestion; backup catalog for Mechanism 3 |
 
 ### 3.3 The 8 integrity signals
 
@@ -163,7 +208,166 @@ Five database roles (`role_producer`, `role_semantics`, `role_integrity`, `role_
 
 ## 4. Architecture
 
-### 4.1 Full system diagram
+### 4.0 System context diagram
+
+Who touches the system, and from which direction.
+
+```
+                              ┌──────────────────────────────────────────────────┐
+                              │                                                  │
+       AI Agent / App ───────►│                                                  │
+       (writes beliefs)       │                                                  │
+                              │                   P Q B S                        │
+       AI Agent / App ◄───────│                                                  │
+       (reads trusted         │        Poison-Quarantine Belief Store            │
+        beliefs only)         │                                                  │
+                              │   CockroachDB Serverless  ×  AWS                │
+       Human Reviewer ───────►│                                                  │
+       (releases / rejects    │                                                  │
+        quarantined beliefs)  │                                                  │
+                              │                                                  │
+       Security Auditor ─────►│                                                  │
+       (queries audit trail,  │                                                  │
+        reconstructs past     └──────────────────────────────────────────────────┘
+        beliefs)                        │                │               │
+                                        │                │               │
+                                        ▼                ▼               ▼
+                               CockroachDB          AWS Lambda       Amazon S3
+                               Serverless           (Screener)      WORM Bucket
+                               (belief store,       CDC-triggered   (immutable
+                               vector index,        integrity gate  audit trail)
+                               MVCC audit)
+
+  External actors:
+  ┌──────────────────┬──────────────────────────────────────────────────────────┐
+  │ Actor            │ What they do                                             │
+  ├──────────────────┼──────────────────────────────────────────────────────────┤
+  │ AI Agent (write) │ Calls ingest API; result is always PENDING               │
+  │ AI Agent (read)  │ Calls recall API; receives only TRUSTED beliefs          │
+  │ Human Reviewer   │ Uses review endpoint to release/reject QUARANTINED items │
+  │ Security Auditor │ Reads S3 WORM trail; runs bitemporal/MVCC queries        │
+  │ Attacker         │ Tries to inject false beliefs via agent write path       │
+  │ Engineer / Admin │ Runs infra scripts; monitored by A18 posture agent       │
+  └──────────────────┴──────────────────────────────────────────────────────────┘
+```
+
+### 4.1 Data flow diagram
+
+How data moves through every stage, and where control decisions happen.
+
+```
+  ┌──────────────────────────────────────────────────────────────────────────────┐
+  │  STAGE 1 — INGEST                                                           │
+  │                                                                             │
+  │  Raw text / document                                                        │
+  │  ─────────────────────────────────────────────────────────────────────►     │
+  │                                                                             │
+  │  A1 IngestionAgent                     [Bedrock Claude 3.5 Sonnet]         │
+  │    → extract (subject, predicate, object) triple                           │
+  │    → assign source_type, source_uri, SHA-256 digest                        │
+  │                                                                             │
+  │  A11 CanonicalizationAgent                                                  │
+  │    → normalize subject/predicate (10 rules)                                │
+  │    → ambiguity → sensitivity = ELEVATED                                    │
+  │                                                                             │
+  │  A12 EmbeddingAgent                    [Bedrock Titan Embed v2 1024-dim]   │
+  │    → compute embedding BEFORE transaction opens                            │
+  │    (Bedrock call is not inside the DB transaction)                         │
+  └────────────────────────────────┬────────────────────────────────────────────┘
+                                   │
+                                   ▼
+  ┌──────────────────────────────────────────────────────────────────────────────┐
+  │  STAGE 2 — RESOLVE (SERIALIZABLE transaction)                               │
+  │                                                                             │
+  │  A7 ResolutionAgent — one attempt per transaction, retried on SQLSTATE 40001│
+  │                                                                             │
+  │  SELECT incumbent FROM belief WHERE ... (re-read on every retry)           │
+  │    │                                                                        │
+  │    ├── No incumbent → INSERT new belief (status = PENDING)                 │
+  │    │                                                                        │
+  │    └── Incumbent exists →                                                  │
+  │          Compare: explicit_invalidation > source_tier > recency > conf.    │
+  │          INSERT contradiction_event (both when challenger wins AND loses)  │
+  │          If challenger wins → close incumbent tx_to; INSERT challenger     │
+  │          If incumbent wins → discard challenger; record refusal            │
+  │                                                                             │
+  │  INSERT provenance row (source attribution)                                │
+  │  COMMIT                                                                    │
+  └────────────────────────────────┬────────────────────────────────────────────┘
+                                   │  belief committed with status = PENDING
+                                   │
+                           CockroachDB CDC changefeed
+                           webhook → AWS Lambda Function URL
+                                   │
+                                   ▼
+  ┌──────────────────────────────────────────────────────────────────────────────┐
+  │  STAGE 3 — SCREEN (Lambda, asynchronous, fail-closed)                       │
+  │                                                                             │
+  │  handler.py receives CDC payload → parses belief snapshot                  │
+  │  Skip if status ≠ PENDING or verdict already exists (idempotent)           │
+  │                                                                             │
+  │  A4 ScreeningGate runs 8 signals in parallel:                              │
+  │                                                                             │
+  │  S1 embedding anomaly ────── AVG(embedding) over cluster [CockroachDB]    │
+  │  S2 source trust tier ─────── lookup source_trust_tier column             │
+  │  S3 imperative content ────── [Bedrock Llama 3 70B classification]        │
+  │  S4 author burst ──────────── rolling count over agent_identity           │
+  │  S5 contradiction burst ───── windowed count over contradiction_event     │
+  │  S6 source diversity ──────── distinct source_digest count                │
+  │  S7 derivation integrity ──── parent belief status check                  │
+  │  S8 temporal plausibility ─── validity window sanity check                │
+  │                                                                             │
+  │  trust_score = Σ(weight_i × signal_i)                                     │
+  │                                                                             │
+  │  score ≤ 0.40 ─────────────────────────────────────► TRUSTED              │
+  │  score ≥ 0.70 ────────────► QUARANTINED ──────────► A6 Cascade BFS       │
+  │  0.40 < score < 0.70 ──────────────────────────────► INCONCLUSIVE (PENDING)│
+  │                                                                             │
+  │  AuditRecord → S3 WORM bucket (every verdict, every state change)         │
+  └────────────────────────────────┬────────────────────────────────────────────┘
+                                   │  status updated in CockroachDB
+                                   │
+                                   ▼
+  ┌──────────────────────────────────────────────────────────────────────────────┐
+  │  STAGE 4 — RECALL (read path, dual enforcement)                             │
+  │                                                                             │
+  │  Query text                                                                 │
+  │  → A12 embed → 1024-dim query vector [Bedrock Titan Embed v2]              │
+  │  → KNN via HNSW vector index (tenant_id prefix-partitioned)               │
+  │  → JOIN v_trusted_current (status='trusted' AND tx_to IS NULL)            │
+  │                                                                             │
+  │  Enforcement layer 1: DB role-scoped view                                  │
+  │    role_consumer has no SELECT on belief table directly                    │
+  │                                                                             │
+  │  Enforcement layer 2: MCP Server                                           │
+  │    Protocol read-only; write verbs raise MCPProtocolError                 │
+  │    before the HTTP call is made                                            │
+  │                                                                             │
+  │  → RecallResult (subject, predicate, object, confidence, provenance)      │
+  │  → retrieval_log row (what was returned, when, to whom)                   │
+  └──────────────────────────────────────────────────────────────────────────────┘
+                                   │
+                                   ▼
+  ┌──────────────────────────────────────────────────────────────────────────────┐
+  │  STAGE 5 — AUDIT (temporal reconstruction)                                  │
+  │                                                                             │
+  │  Mechanism 1 — Bitemporal query                                             │
+  │    SELECT * FROM belief                                                    │
+  │    WHERE tx_from <= $t AND (tx_to IS NULL OR tx_to > $t)                  │
+  │    AND valid_from <= $vt AND (valid_to IS NULL OR valid_to > $vt)          │
+  │    Works at any point in history (permanent, no GC window)                │
+  │                                                                             │
+  │  Mechanism 2 — MVCC AS OF SYSTEM TIME                                      │
+  │    SELECT * FROM belief AS OF SYSTEM TIME '-30m'                           │
+  │    Bounded by MVCC GC window (~30 min on Serverless free tier)            │
+  │                                                                             │
+  │  Mechanism 3 — CockroachDB backup catalog (ccloud CLI, A19)               │
+  │    ccloud cluster backup list → catalog → coverage queries                │
+  │    Covers history beyond MVCC GC window when bitemporal is insufficient   │
+  └──────────────────────────────────────────────────────────────────────────────┘
+```
+
+### 4.2 Full system diagram
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────┐
@@ -285,7 +489,7 @@ Five database roles (`role_producer`, `role_semantics`, `role_integrity`, `role_
 └─────────────────────────────────────────────────────────────────────────────┘
 ```
 
-### 4.2 Trust boundary model
+### 4.3 Trust boundary model
 
 ```
               UNTRUSTED INPUT
@@ -322,30 +526,110 @@ Five database roles (`role_producer`, `role_semantics`, `role_integrity`, `role_
               TRUSTED OUTPUT
 ```
 
-### 4.3 Belief lifecycle
+### 4.4 Belief lifecycle state machine
+
+Every belief begins at `PENDING` and follows exactly one of three paths through the gate. No belief is ever deleted — only closed via bitemporal timestamps.
 
 ```
-  write()
-   ──────►  PENDING  (invisible to consumers)
+                      ┌─────────────────────────────────────────────────────┐
+                      │          BELIEF STATE MACHINE                        │
+                      └─────────────────────────────────────────────────────┘
+
+   External source / agent write
               │
-              │  CDC fires ScreeningGate
-              │
-     ┌────────┴──────────────────────────┐
-     │                │                  │
-     ▼                ▼                  ▼
-  TRUSTED       QUARANTINED        INCONCLUSIVE
-(retrievable)  (cascade fires;    (stays PENDING;
-               invisible to       human review
-               consumers)         required)
-     │                │
-     │         derived_from
-     │         descendants
-     │         re-screened
-     │
-     │  (when superseded by a newer belief)
-     ▼
-  SUPERSEDED
-(validity window closed; never deleted; always queryable via bitemporal)
+              │ A1 ingest → A11 canonicalize → A12 embed
+              │ A7 resolve (SERIALIZABLE) → INSERT
+              │ CHECK: status IN ('pending','trusted','quarantined','superseded')
+              │ CHECK: status != 'trusted' at insert time  [Security Invariant 1]
+              ▼
+   ┌──────────────────┐
+   │                  │  ← role_consumer CANNOT see this state
+   │     PENDING      │  ← v_trusted_current excludes this state
+   │                  │  ← all beliefs start here, no exceptions
+   └────────┬─────────┘
+            │
+            │  CockroachDB CDC changefeed fires
+            │  → AWS Lambda handler.py receives ChangeEvent
+            │  → A4 ScreeningGate runs signals S1–S8
+            │
+            ├─────────────────────────────────────────────────────┐
+            │  trust_score ≤ 0.40                                 │  trust_score ≥ 0.70
+            ▼                                                      ▼
+   ┌──────────────────┐                               ┌──────────────────────┐
+   │                  │                               │                      │
+   │     TRUSTED      │                               │    QUARANTINED       │
+   │                  │                               │                      │
+   │  retrievable via │                               │  INSERT quarantine   │
+   │  v_trusted_      │                               │  row; invisible to   │
+   │  current view    │                               │  consumers; cascade  │
+   │                  │                               │  fires (BFS over     │
+   └────────┬─────────┘                               │  derived_from graph) │
+            │                                         └──────────┬───────────┘
+            │                                                    │
+            │                                         A6 CascadeAgent re-screens
+            │                                         every descendant belief
+            │                                                    │
+            │                                         ┌──────────▼───────────┐
+            │                                         │  descendants become  │
+            │                                         │  QUARANTINED too if  │
+            │                                         │  they fail re-screen │
+            │                                         └──────────────────────┘
+            │
+            │  0.40 < trust_score < 0.70
+            │         ┌──────────────────────────┐
+            │         │                          │
+            │         │    INCONCLUSIVE          │
+            │         │    (stays PENDING;       │
+            │         │    fail-closed;          │
+            │         │    invisible to          │
+            │         │    consumers)            │
+            │         └──────────┬───────────────┘
+            │                    │
+            │         A14 ReviewAgent (human-authorized)
+            │                    │
+            │          ┌─────────┴──────────┐
+            │          │                    │
+            │          ▼                    ▼
+            │        release              reject
+            │       (→ TRUSTED)      (→ QUARANTINED)
+            │
+            │  New contradicting belief arrives and wins resolution:
+            ▼
+   ┌──────────────────┐
+   │                  │
+   │   SUPERSEDED     │  ← tx_to set to NOW(); never deleted
+   │                  │  ← always queryable via bitemporal AS OF timestamp
+   │  (tx_to closed;  │  ← contradiction_event row records the winner,
+   │   valid window   │     the loser, and the resolution rule used
+   │   may still be   │
+   │   open in world  │
+   │   time)          │
+   └──────────────────┘
+
+  State transition table:
+  ┌──────────────┬──────────────┬────────────────────────────────────────────┐
+  │ From         │ To           │ Trigger / Guard                            │
+  ├──────────────┼──────────────┼────────────────────────────────────────────┤
+  │ (none)       │ PENDING      │ Ingest write; always; CHECK enforced       │
+  │ PENDING      │ TRUSTED      │ Gate score ≤ 0.40                          │
+  │ PENDING      │ QUARANTINED  │ Gate score ≥ 0.70                          │
+  │ PENDING      │ PENDING      │ Gate score in (0.40, 0.70) — stays pending │
+  │ TRUSTED      │ SUPERSEDED   │ Newer belief wins resolution               │
+  │ QUARANTINED  │ SUPERSEDED   │ Newer belief wins resolution (rare)        │
+  │ INCONCLUSIVE │ TRUSTED      │ A14 human reviewer releases                │
+  │ INCONCLUSIVE │ QUARANTINED  │ A14 human reviewer rejects                 │
+  │ SUPERSEDED   │ (terminal)   │ Never transitions further; bitemporal only │
+  └──────────────┴──────────────┴────────────────────────────────────────────┘
+
+  Visibility by role:
+  ┌──────────────┬────────────────┬──────────────────────────────────────────┐
+  │ State        │ role_consumer  │ role_auditor                             │
+  ├──────────────┼────────────────┼──────────────────────────────────────────┤
+  │ PENDING      │ NEVER          │ Yes (direct belief table access)         │
+  │ TRUSTED      │ Yes (current)  │ Yes (all versions)                       │
+  │ QUARANTINED  │ NEVER          │ Yes                                      │
+  │ SUPERSEDED   │ NEVER          │ Yes (bitemporal query required)          │
+  └──────────────┴────────────────┴──────────────────────────────────────────┘
 ```
 
 ---
