@@ -148,7 +148,7 @@ Recall path     Query embed → KNN (vector index) → v_trusted_current → Rec
 ### 3.2 Agent roster (19 agents implemented)
 
 | Agent | Role |
-|---|---|---|
+|---|---|
 | A1 IngestionAgent | Extracts belief triples from raw text via Bedrock Claude |
 | A2 InferenceAgent | Derives new beliefs from trusted parents; populates `derived_from` |
 | A3 CorrectionAgent | Explicit invalidation path; always wins resolution |
@@ -221,7 +221,7 @@ Who touches the system, and from which direction.
        AI Agent / App ◄───────│                                                  │
        (reads trusted         │        Poison-Quarantine Belief Store            │
         beliefs only)         │                                                  │
-                              │   CockroachDB Serverless  ×  AWS                │
+                              │   CockroachDB Serverless  ×  AWS                 │
        Human Reviewer ───────►│                                                  │
        (releases / rejects    │                                                  │
         quarantined beliefs)  │                                                  │
@@ -256,43 +256,43 @@ Who touches the system, and from which direction.
 How data moves through every stage, and where control decisions happen.
 
 ```
-  ┌──────────────────────────────────────────────────────────────────────────────┐
+  ┌─────────────────────────────────────────────────────────────────────────────┐
   │  STAGE 1 — INGEST                                                           │
   │                                                                             │
   │  Raw text / document                                                        │
-  │  ─────────────────────────────────────────────────────────────────────►     │
+  │  ────────────────────────────────────────────────────────────────────►      │
   │                                                                             │
-  │  A1 IngestionAgent                     [Bedrock Claude 3.5 Sonnet]         │
-  │    → extract (subject, predicate, object) triple                           │
-  │    → assign source_type, source_uri, SHA-256 digest                        │
+  │  A1 IngestionAgent                     [Bedrock Claude 3.5 Sonnet]          │
+  │    → extract (subject, predicate, object) triple                            │
+  │    → assign source_type, source_uri, SHA-256 digest                         │
   │                                                                             │
   │  A11 CanonicalizationAgent                                                  │
-  │    → normalize subject/predicate (10 rules)                                │
-  │    → ambiguity → sensitivity = ELEVATED                                    │
+  │    → normalize subject/predicate (10 rules)                                 │
+  │    → ambiguity → sensitivity = ELEVATED                                     │
   │                                                                             │
-  │  A12 EmbeddingAgent                    [Bedrock Titan Embed v2 1024-dim]   │
-  │    → compute embedding BEFORE transaction opens                            │
-  │    (Bedrock call is not inside the DB transaction)                         │
+  │  A12 EmbeddingAgent                    [Bedrock Titan Embed v2 1024-dim]    │
+  │    → compute embedding BEFORE transaction opens                             │
+  │    (Bedrock call is not inside the DB transaction)                          │
   └────────────────────────────────┬────────────────────────────────────────────┘
                                    │
                                    ▼
-  ┌──────────────────────────────────────────────────────────────────────────────┐
+  ┌─────────────────────────────────────────────────────────────────────────────┐
   │  STAGE 2 — RESOLVE (SERIALIZABLE transaction)                               │
   │                                                                             │
   │  A7 ResolutionAgent — one attempt per transaction, retried on SQLSTATE 40001│
   │                                                                             │
-  │  SELECT incumbent FROM belief WHERE ... (re-read on every retry)           │
+  │  SELECT incumbent FROM belief WHERE ... (re-read on every retry)            │
   │    │                                                                        │
-  │    ├── No incumbent → INSERT new belief (status = PENDING)                 │
+  │    ├── No incumbent → INSERT new belief (status = PENDING)                  │
   │    │                                                                        │
-  │    └── Incumbent exists →                                                  │
-  │          Compare: explicit_invalidation > source_tier > recency > conf.    │
-  │          INSERT contradiction_event (both when challenger wins AND loses)  │
-  │          If challenger wins → close incumbent tx_to; INSERT challenger     │
-  │          If incumbent wins → discard challenger; record refusal            │
+  │    └── Incumbent exists →                                                   │
+  │          Compare: explicit_invalidation > source_tier > recency > conf.     │
+  │          INSERT contradiction_event (both when challenger wins AND loses)   │
+  │          If challenger wins → close incumbent tx_to; INSERT challenger      │
+  │          If incumbent wins → discard challenger; record refusal             │
   │                                                                             │
-  │  INSERT provenance row (source attribution)                                │
-  │  COMMIT                                                                    │
+  │  INSERT provenance row (source attribution)                                 │
+  │  COMMIT                                                                     │
   └────────────────────────────────┬────────────────────────────────────────────┘
                                    │  belief committed with status = PENDING
                                    │
@@ -300,70 +300,70 @@ How data moves through every stage, and where control decisions happen.
                            webhook → AWS Lambda Function URL
                                    │
                                    ▼
-  ┌──────────────────────────────────────────────────────────────────────────────┐
+  ┌─────────────────────────────────────────────────────────────────────────────┐
   │  STAGE 3 — SCREEN (Lambda, asynchronous, fail-closed)                       │
   │                                                                             │
-  │  handler.py receives CDC payload → parses belief snapshot                  │
-  │  Skip if status ≠ PENDING or verdict already exists (idempotent)           │
+  │  handler.py receives CDC payload → parses belief snapshot                   │
+  │  Skip if status ≠ PENDING or verdict already exists (idempotent)            │
   │                                                                             │
-  │  A4 ScreeningGate runs 8 signals in parallel:                              │
+  │  A4 ScreeningGate runs 8 signals in parallel:                               │
   │                                                                             │
-  │  S1 embedding anomaly ────── AVG(embedding) over cluster [CockroachDB]    │
-  │  S2 source trust tier ─────── lookup source_trust_tier column             │
-  │  S3 imperative content ────── [Bedrock Llama 3 70B classification]        │
-  │  S4 author burst ──────────── rolling count over agent_identity           │
-  │  S5 contradiction burst ───── windowed count over contradiction_event     │
-  │  S6 source diversity ──────── distinct source_digest count                │
-  │  S7 derivation integrity ──── parent belief status check                  │
-  │  S8 temporal plausibility ─── validity window sanity check                │
+  │  S1 embedding anomaly ────── AVG(embedding) over cluster [CockroachDB]      │
+  │  S2 source trust tier ─────── lookup source_trust_tier column               │
+  │  S3 imperative content ────── [Bedrock Llama 3 70B classification]          │
+  │  S4 author burst ──────────── rolling count over agent_identity             │
+  │  S5 contradiction burst ───── windowed count over contradiction_event       │
+  │  S6 source diversity ──────── distinct source_digest count                  │
+  │  S7 derivation integrity ──── parent belief status check                    │
+  │  S8 temporal plausibility ─── validity window sanity check                  │
   │                                                                             │
-  │  trust_score = Σ(weight_i × signal_i)                                     │
+  │  trust_score = Σ(weight_i × signal_i)                                       │
   │                                                                             │
-  │  score ≤ 0.40 ─────────────────────────────────────► TRUSTED              │
-  │  score ≥ 0.70 ────────────► QUARANTINED ──────────► A6 Cascade BFS       │
-  │  0.40 < score < 0.70 ──────────────────────────────► INCONCLUSIVE (PENDING)│
+  │  score ≤ 0.40 ─────────────────────────────────────► TRUSTED                │
+  │  score ≥ 0.70 ────────────► QUARANTINED ──────────► A6 Cascade BFS          │
+  │  0.40 < score < 0.70 ──────────────────────────────► INCONCLUSIVE (PENDING) │
   │                                                                             │
-  │  AuditRecord → S3 WORM bucket (every verdict, every state change)         │
+  │  AuditRecord → S3 WORM bucket (every verdict, every state change)           │
   └────────────────────────────────┬────────────────────────────────────────────┘
                                    │  status updated in CockroachDB
                                    │
                                    ▼
   ┌──────────────────────────────────────────────────────────────────────────────┐
-  │  STAGE 4 — RECALL (read path, dual enforcement)                             │
-  │                                                                             │
-  │  Query text                                                                 │
-  │  → A12 embed → 1024-dim query vector [Bedrock Titan Embed v2]              │
-  │  → KNN via HNSW vector index (tenant_id prefix-partitioned)               │
-  │  → JOIN v_trusted_current (status='trusted' AND tx_to IS NULL)            │
-  │                                                                             │
-  │  Enforcement layer 1: DB role-scoped view                                  │
-  │    role_consumer has no SELECT on belief table directly                    │
-  │                                                                             │
-  │  Enforcement layer 2: MCP Server                                           │
-  │    Protocol read-only; write verbs raise MCPProtocolError                 │
-  │    before the HTTP call is made                                            │
-  │                                                                             │
-  │  → RecallResult (subject, predicate, object, confidence, provenance)      │
-  │  → retrieval_log row (what was returned, when, to whom)                   │
+  │  STAGE 4 — RECALL (read path, dual enforcement)                              │
+  │                                                                              │
+  │  Query text                                                                  │
+  │  → A12 embed → 1024-dim query vector [Bedrock Titan Embed v2]                │
+  │  → KNN via HNSW vector index (tenant_id prefix-partitioned)                  │
+  │  → JOIN v_trusted_current (status='trusted' AND tx_to IS NULL)               │
+  │                                                                              │
+  │  Enforcement layer 1: DB role-scoped view                                    │
+  │    role_consumer has no SELECT on belief table directly                      │
+  │                                                                              │
+  │  Enforcement layer 2: MCP Server                                             │
+  │    Protocol read-only; write verbs raise MCPProtocolError                    │
+  │    before the HTTP call is made                                              │
+  │                                                                              │
+  │  → RecallResult (subject, predicate, object, confidence, provenance)         │
+  │  → retrieval_log row (what was returned, when, to whom)                      │
   └──────────────────────────────────────────────────────────────────────────────┘
                                    │
                                    ▼
   ┌──────────────────────────────────────────────────────────────────────────────┐
-  │  STAGE 5 — AUDIT (temporal reconstruction)                                  │
-  │                                                                             │
-  │  Mechanism 1 — Bitemporal query                                             │
-  │    SELECT * FROM belief                                                    │
-  │    WHERE tx_from <= $t AND (tx_to IS NULL OR tx_to > $t)                  │
-  │    AND valid_from <= $vt AND (valid_to IS NULL OR valid_to > $vt)          │
-  │    Works at any point in history (permanent, no GC window)                │
-  │                                                                             │
-  │  Mechanism 2 — MVCC AS OF SYSTEM TIME                                      │
-  │    SELECT * FROM belief AS OF SYSTEM TIME '-30m'                           │
-  │    Bounded by MVCC GC window (~30 min on Serverless free tier)            │
-  │                                                                             │
-  │  Mechanism 3 — CockroachDB backup catalog (ccloud CLI, A19)               │
-  │    ccloud cluster backup list → catalog → coverage queries                │
-  │    Covers history beyond MVCC GC window when bitemporal is insufficient   │
+  │  STAGE 5 — AUDIT (temporal reconstruction)                                   │
+  │                                                                              │
+  │  Mechanism 1 — Bitemporal query                                              │
+  │    SELECT * FROM belief                                                      │
+  │    WHERE tx_from <= $t AND (tx_to IS NULL OR tx_to > $t)                     │
+  │    AND valid_from <= $vt AND (valid_to IS NULL OR valid_to > $vt)            │
+  │    Works at any point in history (permanent, no GC window)                   │
+  │                                                                              │
+  │  Mechanism 2 — MVCC AS OF SYSTEM TIME                                        │
+  │    SELECT * FROM belief AS OF SYSTEM TIME '-30m'                             │
+  │    Bounded by MVCC GC window (~30 min on Serverless free tier)               │
+  │                                                                              │
+  │  Mechanism 3 — CockroachDB backup catalog (ccloud CLI, A19)                  │
+  │    ccloud cluster backup list → catalog → coverage queries                   │
+  │    Covers history beyond MVCC GC window when bitemporal is insufficient      │
   └──────────────────────────────────────────────────────────────────────────────┘
 ```
 
@@ -376,14 +376,14 @@ How data moves through every stage, and where control decisions happen.
 │  Raw text / source content                                                  │
 │         │                                                                   │
 │         ▼                                                                   │
-│  A1 IngestionAgent ──► Bedrock Claude 3.5 Sonnet                           │
+│  A1 IngestionAgent ──► Bedrock Claude 3.5 Sonnet                            │
 │  (extract subject/predicate/object triple)                                  │
 │         │                                                                   │
 │         ▼                                                                   │
-│  A11 CanonicalizationAgent (10 normalization rules; ambiguous → ELEVATED)  │
+│  A11 CanonicalizationAgent (10 normalization rules; ambiguous → ELEVATED)   │
 │         │                                                                   │
 │         ▼                                                                   │
-│  A12 EmbeddingAgent ──► Bedrock Titan Embed v2 → 1024-dim vector           │
+│  A12 EmbeddingAgent ──► Bedrock Titan Embed v2 → 1024-dim vector            │
 │  (computed BEFORE the transaction opens)                                    │
 │         │                                                                   │
 │         ▼                                                                   │
@@ -392,12 +392,12 @@ How data moves through every stage, and where control decisions happen.
 │  │ SELECT incumbent FOR UPDATE (plain SELECT — no FOR UPDATE)           │   │
 │  │ Compare: explicit_invalidation > source_tier > recency > confidence  │   │
 │  │ Write contradiction_event (even when incumbent retained)             │   │
-│  │ Close incumbent tx_to; INSERT challenger (status=PENDING)           │   │
-│  │ Retry on SQLSTATE 40001 (re-read on every attempt)                  │   │
+│  │ Close incumbent tx_to; INSERT challenger (status=PENDING)            │   │
+│  │ Retry on SQLSTATE 40001 (re-read on every attempt)                   │   │
 │  └──────────────────────────────────────────────────────────────────────┘   │
 │         │                                                                   │
 │         ▼                                                                   │
-│  INSERT belief (status=PENDING) + INSERT provenance + COMMIT               │
+│  INSERT belief (status=PENDING) + INSERT provenance + COMMIT                │
 └────────────────────────────────────────┬────────────────────────────────────┘
                                          │
                             CockroachDB CDC changefeed
@@ -405,32 +405,32 @@ How data moves through every stage, and where control decisions happen.
                                          │
                                          ▼
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│  INTEGRITY PATH  (AWS Lambda — infra/lambda/handler.py)                    │
+│  INTEGRITY PATH  (AWS Lambda — infra/lambda/handler.py)                     │
 │                                                                             │
-│  ChangeEvent (full BeliefSnapshot in 'after' field)                        │
+│  ChangeEvent (full BeliefSnapshot in 'after' field)                         │
 │         │                                                                   │
 │         ▼                                                                   │
 │  A4 ScreeningGate                                                           │
-│  ┌──────────────────────────────────────────────────────────────────────┐   │
-│  │ S1 cluster mean embedding distance (CockroachDB AVG(embedding))     │   │
-│  │ S2 source trust tier lookup                                          │   │
-│  │ S3 imperative content ──► Bedrock Llama 3 70B classification        │   │
-│  │ S4 author behavior burst (rolling window over agent_identity)       │   │
-│  │ S5 contradiction burst (windowed count over contradiction_event)    │   │
-│  │ S6 source diversity (source_digest independence check)              │   │
-│  │ S7 derivation integrity (parent belief status check)                │   │
-│  │ S8 temporal plausibility (validity window sanity)                   │   │
-│  └──────────────────────────────────────────────────────────────────────┘   │
+│  ┌─────────────────────────────────────────────────────────────────────┐    │
+│  │ S1 cluster mean embedding distance (CockroachDB AVG(embedding))     │    │
+│  │ S2 source trust tier lookup                                         │    │
+│  │ S3 imperative content ──► Bedrock Llama 3 70B classification        │    │
+│  │ S4 author behavior burst (rolling window over agent_identity)       │    │
+│  │ S5 contradiction burst (windowed count over contradiction_event)    │    │
+│  │ S6 source diversity (source_digest independence check)              │    │
+│  │ S7 derivation integrity (parent belief status check)                │    │
+│  │ S8 temporal plausibility (validity window sanity)                   │    │
+│  └─────────────────────────────────────────────────────────────────────┘    │
 │         │                                                                   │
-│         ├──── TRUSTED (score ≤ 0.40) → UPDATE belief.status='trusted'      │
+│         ├──── TRUSTED (score ≤ 0.40) → UPDATE belief.status='trusted'       │
 │         │                                                                   │
-│         ├──── QUARANTINED (score ≥ 0.70)                                   │
+│         ├──── QUARANTINED (score ≥ 0.70)                                    │
 │         │     → INSERT quarantine row                                       │
-│         │     → A6 CascadeAgent: BFS over derived_from graph               │
+│         │     → A6 CascadeAgent: BFS over derived_from graph                │
 │         │       re-screen every descendant belief                           │
-│         │     → AuditSink → S3 WORM (ObjectLock COMPLIANCE, 365 days)     │
+│         │     → AuditSink → S3 WORM (ObjectLock COMPLIANCE, 365 days)       │
 │         │                                                                   │
-│         └──── INCONCLUSIVE → stays PENDING; requires human review (A14)   │
+│         └──── INCONCLUSIVE → stays PENDING; requires human review (A14)     │
 └────────────────────────────────────────┬────────────────────────────────────┘
                                          │
                             belief.status updated in CockroachDB
@@ -441,51 +441,51 @@ How data moves through every stage, and where control decisions happen.
 │  Query text                                                                 │
 │         │                                                                   │
 │         ▼                                                                   │
-│  A12 Embed ──► Bedrock Titan Embed v2 → 1024-dim query vector              │
+│  A12 Embed ──► Bedrock Titan Embed v2 → 1024-dim query vector               │
 │         │                                                                   │
 │         ▼                                                                   │
-│  KNN search via HNSW vector index (tenant_id prefix-partitioned)           │
-│  Two-phase CTE with belief@idx_belief_vector hint                          │
+│  KNN search via HNSW vector index (tenant_id prefix-partitioned)            │
+│  Two-phase CTE with belief@idx_belief_vector hint                           │
 │         │                                                                   │
 │         ▼                                                                   │
-│  v_trusted_current view (status='trusted' AND tx_to IS NULL)               │
-│  → role_consumer has no SELECT on belief table directly                    │
+│  v_trusted_current view (status='trusted' AND tx_to IS NULL)                │
+│  → role_consumer has no SELECT on belief table directly                     │
 │         │                                                                   │
-│         ├── Layer 1: DB role-scoped view (structural filter)               │
+│         ├── Layer 1: DB role-scoped view (structural filter)                │
 │         │                                                                   │
-│         └── Layer 2: MCP Server (cockroachlabs.cloud/mcp)                  │
-│             Protocol read-only; write verbs raise MCPProtocolError         │
+│         └── Layer 2: MCP Server (cockroachlabs.cloud/mcp)                   │
+│             Protocol read-only; write verbs raise MCPProtocolError          │
 │             before the HTTP call is made                                    │
 │                   │                                                         │
 │                   ▼                                                         │
-│  RecallResult + retrieval_log row (what was actually returned)             │
+│  RecallResult + retrieval_log row (what was actually returned)              │
 └─────────────────────────────────────────────────────────────────────────────┘
 
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│  SELF-VERIFICATION  (Scheduled Lambda — every N minutes)                   │
+│  SELF-VERIFICATION  (Scheduled Lambda — every N minutes)                    │
 │                                                                             │
 │  A18 PostureVerificationAgent                                               │
-│  ┌──────────────────────────────────────────────────────────────────────┐   │
-│  │ Query information_schema.role_table_grants                           │   │
-│  │ Query information_schema.check_constraints                           │   │
-│  │ Query pg_catalog.pg_indexes (vector index present?)                 │   │
-│  │ Compare against docs/posture-baseline.json (committed file)         │   │
-│  │ On drift → POSTURE_DRIFT_DETECTED audit + PostureDriftError         │   │
-│  │ On match → POSTURE_ATTESTED audit                                   │   │
-│  │ A18 has no remediate() method — detect only, human acts             │   │
-│  └──────────────────────────────────────────────────────────────────────┘   │
+│  ┌─────────────────────────────────────────────────────────────────────┐    │
+│  │ Query information_schema.role_table_grants                          │    │
+│  │ Query information_schema.check_constraints                          │    │
+│  │ Query pg_catalog.pg_indexes (vector index present?)                 │    │
+│  │ Compare against docs/posture-baseline.json (committed file)         │    │
+│  │ On drift → POSTURE_DRIFT_DETECTED audit + PostureDriftError         │    │
+│  │ On match → POSTURE_ATTESTED audit                                   │    │
+│  │ A18 has no remediate() method — detect only, human acts             │    │
+│  └─────────────────────────────────────────────────────────────────────┘    │
 │                                                                             │
 │  A19 SubstrateCustodyAgent                                                  │
-│  ┌──────────────────────────────────────────────────────────────────────┐   │
-│  │ ccloud cluster audit-log list --output json                          │   │
-│  │   → parse each event → AuditRecord → S3 WORM                        │   │
-│  │   (catches admin actions invisible to SQL-layer audit)               │   │
-│  │                                                                       │   │
-│  │ ccloud cluster backup list --output json                             │   │
-│  │   → backup catalog → Mechanism 3 coverage queries                   │   │
-│  │   (temporal reconstruction beyond MVCC GC window)                   │   │
-│  │ A19 has no restore() method — backup trigger only, human restores   │   │
-│  └──────────────────────────────────────────────────────────────────────┘   │
+│  ┌─────────────────────────────────────────────────────────────────────┐    │
+│  │ ccloud cluster audit-log list --output json                         │    │
+│  │   → parse each event → AuditRecord → S3 WORM                        │    │
+│  │   (catches admin actions invisible to SQL-layer audit)              │    │
+│  │                                                                     │    │
+│  │ ccloud cluster backup list --output json                            │    │
+│  │   → backup catalog → Mechanism 3 coverage queries                   │    │
+│  │   (temporal reconstruction beyond MVCC GC window)                   │    │
+│  │ A19 has no restore() method — backup trigger only, human restores   │    │
+│  └─────────────────────────────────────────────────────────────────────┘    │
 └─────────────────────────────────────────────────────────────────────────────┘
 ```
 
@@ -532,7 +532,7 @@ Every belief begins at `PENDING` and follows exactly one of three paths through 
 
 ```
                       ┌─────────────────────────────────────────────────────┐
-                      │          BELIEF STATE MACHINE                        │
+                      │          BELIEF STATE MACHINE                       │
                       └─────────────────────────────────────────────────────┘
 
    External source / agent write
