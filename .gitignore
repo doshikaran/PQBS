@@ -6,3 +6,5 @@ __pycache__/
 *.log
 eval/results/*.raw
 .DS_Store
+docs/
+.claude/
